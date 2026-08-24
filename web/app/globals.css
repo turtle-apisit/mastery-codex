@@ -27,6 +27,8 @@
 *{box-sizing:border-box;}
 html{scroll-behavior:smooth;}
 body{
+  position:relative;
+  z-index:0;
   margin:0;
   background:
     radial-gradient(ellipse 900px 500px at 15% -10%, rgba(79,214,240,.06), transparent 60%),
@@ -280,10 +282,10 @@ button{font-family:inherit;}
   gap:20px;
 }
 .matrix-rain{
-  position:absolute;
+  position:fixed;
   inset:0;
   z-index:-1;
-  opacity:.34;
+  opacity:.18;
   pointer-events:none;
 }
 .char-top{display:flex;align-items:flex-start;gap:22px;flex-wrap:wrap;}

@@ -28,9 +28,8 @@ export default function MatrixRain() {
     let drops: number[] = [];
 
     function resize() {
-      const rect = canvas!.parentElement!.getBoundingClientRect();
-      canvas!.width = rect.width;
-      canvas!.height = rect.height;
+      canvas!.width = window.innerWidth;
+      canvas!.height = window.innerHeight;
       columns = Math.max(1, Math.floor(canvas!.width / FONT_SIZE));
       drops = new Array(columns).fill(0).map(() => Math.random() * -60);
     }

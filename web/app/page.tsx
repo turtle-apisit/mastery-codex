@@ -1,5 +1,4 @@
 import Image from "next/image";
-import MatrixRain from "@/components/MatrixRain";
 import PortraitFx from "@/components/PortraitFx";
 import SkillInventory from "@/components/SkillInventory";
 import { getAllConcepts, getCycleInfo, getJobSummaries, getStreak } from "@/lib/vault";
@@ -49,7 +48,6 @@ export default function CharacterPage() {
       </div>
 
       <section className="hud" id="character">
-        <MatrixRain />
         <div className="char-top">
           <PortraitFx src="/art/character-portrait.png" alt="Character portrait" />
 

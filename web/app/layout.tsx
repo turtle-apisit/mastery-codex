@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Rajdhani, IBM_Plex_Sans_Thai, IBM_Plex_Mono } from "next/font/google";
 import TopNav from "@/components/TopNav";
+import MatrixRain from "@/components/MatrixRain";
 import "./globals.css";
 
 const rajdhani = Rajdhani({
@@ -34,6 +35,7 @@ export default function RootLayout({
       <body
         className={`${rajdhani.variable} ${plexSansThai.variable} ${plexMono.variable}`}
       >
+        <MatrixRain />
         <TopNav />
         {children}
       </body>
