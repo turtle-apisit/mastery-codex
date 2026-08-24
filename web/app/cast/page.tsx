@@ -7,10 +7,15 @@ export default function CastPage() {
 
   return (
     <div className="page">
-      <section className="panel" id="cast">
-        <h2>The Cast</h2>
-        <CastGrid agents={agents} contract={contract} />
-      </section>
+      <header className="cast-head">
+        <h1>The Cast</h1>
+        <p className="cast-head-sub">
+          The agents that read your material, set your work, and keep the record —
+          each one a real Claude Code subagent behind the scenes.
+        </p>
+      </header>
+
+      <CastGrid agents={agents} contract={contract} />
     </div>
   );
 }

@@ -104,10 +104,6 @@ export default function CastGrid({ agents, contract }: { agents: Agent[]; contra
             </div>
             <div className="cast-detail-role">{roleTitle(selected.description)}</div>
             <p className="cast-detail-bio">{BIOS[selected.slug]}</p>
-            <div className="cast-detail-spec-label">Full capability sheet</div>
-            <div className="cast-detail-section markdown-body">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{selected.body}</ReactMarkdown>
-            </div>
             <div className="cast-detail-section">
               <h3>Tools</h3>
               <div className="cast-detail-tools">
@@ -115,6 +111,10 @@ export default function CastGrid({ agents, contract }: { agents: Agent[]; contra
                   <span className="tag" key={t}>{t}</span>
                 ))}
               </div>
+            </div>
+            <div className="cast-detail-spec-label">Full capability sheet</div>
+            <div className="cast-detail-sheet markdown-body">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{selected.body}</ReactMarkdown>
             </div>
           </div>
         </div>
