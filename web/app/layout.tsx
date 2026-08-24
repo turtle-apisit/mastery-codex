@@ -2,10 +2,6 @@ import type { Metadata } from "next";
 import { Rajdhani, IBM_Plex_Sans_Thai, IBM_Plex_Mono } from "next/font/google";
 import TopNav from "@/components/TopNav";
 import MatrixRain from "@/components/MatrixRain";
-import HudFrame from "@/components/HudFrame";
-import BootSequence from "@/components/BootSequence";
-import EventToasts from "@/components/EventToasts";
-import { getAllConcepts, getCycleInfo, getJobSummaries, getStreak } from "@/lib/vault";
 import "./globals.css";
 
 const rajdhani = Rajdhani({
@@ -34,42 +30,18 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const jobs = getJobSummaries();
-  const cycle = getCycleInfo();
-  const concepts = getAllConcepts();
-  const unlocked = concepts.filter((c) => !c.locked);
-  const totalXp = unlocked.reduce((s, c) => s + c.score, 0);
-  const maxXp = unlocked.length * 100;
-
-  const streak = getStreak();
-  const hud = {
-    level: jobs.reduce((s, j) => s + j.level, 0),
-    xpPct: maxXp ? Math.round((totalXp / maxXp) * 100) : 0,
-    streak,
-    bossPrep: cycle.bossPrep,
-    week: cycle.week,
-    lengthWeeks: cycle.lengthWeeks,
-  };
-
-  const snapshot = {
-    jobLevels: Object.fromEntries(jobs.map((j) => [j.subject, j.level])),
-    mastered: concepts
-      .filter((c) => !c.locked && c.status === "mastered")
-      .map((c) => c.skill_name),
-    streak,
-  };
-
   return (
-    <html lang="en">
-      <body
-        className={`${rajdhani.variable} ${plexSansThai.variable} ${plexMono.variable}`}
-      >
+    // next/font variables must land on <html>: globals.css declares
+    // --font-mono/-body/-display on :root in terms of them, and a var()
+    // that resolves nowhere makes the whole declaration invalid.
+    <html
+      lang="en"
+      className={`${rajdhani.variable} ${plexSansThai.variable} ${plexMono.variable}`}
+    >
+      <body>
         <MatrixRain />
-        <HudFrame />
-        <TopNav hud={hud} />
+        <TopNav />
         {children}
-        <EventToasts snapshot={snapshot} />
-        <BootSequence />
       </body>
     </html>
   );

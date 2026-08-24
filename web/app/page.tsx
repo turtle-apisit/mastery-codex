@@ -1,4 +1,3 @@
-import { ViewTransition } from "react";
 import Image from "next/image";
 import AnimatedBar from "@/components/AnimatedBar";
 import AnimatedNum from "@/components/AnimatedNum";
@@ -27,7 +26,6 @@ export default function CharacterPage() {
   });
 
   return (
-    <ViewTransition enter="page-in" exit="page-out" default="none">
     <div className="page">
       <div className="cover-banner cut">
         <Image
@@ -102,6 +100,5 @@ export default function CharacterPage() {
         <SkillInventory concepts={concepts} />
       </section>
     </div>
-    </ViewTransition>
   );
 }
