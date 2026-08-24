@@ -6,8 +6,8 @@ Reference art for the Mastery Codex UI mockup.
 
 Uploaded directly in this folder:
 
-- `img-main-character.png` — player character portrait, used in the Character section of the dashboard mockup.
-- `bg-city.png` — MMO town scene, used as the hero banner above the Character section.
+- `character-portrait.png` — player character portrait, used in the Character section of the dashboard mockup.
+- `town-hub-background.png` — MMO town scene, used as the hero banner above the Character section.
 
 ## Cast
 
