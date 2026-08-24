@@ -1,0 +1,5 @@
+# Course source material — lecture PDFs and slide decks.
+# Deliberately untracked: ~150MB of binaries that would bloat the repo
+# permanently. Concept notes reference these by filename in `source:`,
+# so the vault stays meaningful without them.
+assets/raw-data/
