@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import AnimatedBar from "@/components/AnimatedBar";
+import AnimatedNum from "@/components/AnimatedNum";
 
 const TABS = [
   { href: "/", label: "Character" },
@@ -44,13 +46,13 @@ export default function TopNav({ hud }: { hud: NavHud }) {
         <div className="nav-hud">
           <span className="nav-hud-lv">
             <span className="t">LV</span>
-            <span className="num">{hud.level}</span>
+            <AnimatedNum value={hud.level} className="num" />
           </span>
-          <span className="nav-hud-xp">
-            <span className="nav-hud-xp-track">
-              <span className="nav-hud-xp-fill" style={{ width: `${hud.xpPct}%` }} />
-            </span>
-          </span>
+          <AnimatedBar
+            pct={hud.xpPct}
+            trackClass="nav-hud-xp-track"
+            fillClass="nav-hud-xp-fill"
+          />
           <span className="nav-hud-streak num">{hud.streak}d</span>
           <span className={"nav-hud-cycle" + (hud.bossPrep ? " boss" : "")}>
             {hud.bossPrep ? "BOSS WEEK" : `W${hud.week}/${hud.lengthWeeks}`}

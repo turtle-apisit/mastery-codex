@@ -1,5 +1,7 @@
 import { ViewTransition } from "react";
 import Image from "next/image";
+import AnimatedBar from "@/components/AnimatedBar";
+import AnimatedNum from "@/components/AnimatedNum";
 import PortraitFx from "@/components/PortraitFx";
 import SkillInventory from "@/components/SkillInventory";
 import { getAllConcepts, getCycleInfo, getJobSummaries, getStreak } from "@/lib/vault";
@@ -55,7 +57,7 @@ export default function CharacterPage() {
 
           <div className="crest cut-sm">
             <span className="crest-tag">LV</span>
-            <span className="crest-num num">{baseLevel}</span>
+            <AnimatedNum value={baseLevel} className="crest-num num" />
           </div>
 
           <div className="hud-id">
@@ -66,11 +68,9 @@ export default function CharacterPage() {
               <span className="streak">{streak}-day streak</span>
             </div>
             <div className="xp-row">
-              <div className="xp-track">
-                <div className="xp-fill" style={{ width: `${xpPct}%` }} />
-              </div>
+              <AnimatedBar pct={xpPct} trackClass="xp-track" fillClass="xp-fill" />
               <span className="xp-label num">
-                {totalXp} / {maxXp} XP
+                <AnimatedNum value={totalXp} /> / {maxXp} XP
               </span>
             </div>
           </div>

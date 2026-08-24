@@ -1,4 +1,6 @@
 import { ViewTransition } from "react";
+import AnimatedBar from "@/components/AnimatedBar";
+import AnimatedNum from "@/components/AnimatedNum";
 import { getJobSummaries } from "@/lib/vault";
 
 export default function JobsPage() {
@@ -18,12 +20,14 @@ export default function JobsPage() {
                 <span className="job-name">{job.subject}</span>
                 <span className="job-lv">
                   <span>LV</span>
-                  {job.level}
+                  <AnimatedNum value={job.level} />
                 </span>
               </div>
-              <div className="job-xp-track">
-                <div className="job-xp-fill" style={{ width: `${job.xpPct}%` }} />
-              </div>
+              <AnimatedBar
+                pct={job.xpPct}
+                trackClass="job-xp-track"
+                fillClass="job-xp-fill"
+              />
               <div className="job-tags">
                 {job.mastered > 0 && <span className="tag mastered">{job.mastered} Mastered</span>}
                 {job.training > 0 && <span className="tag training">{job.training} Training</span>}
