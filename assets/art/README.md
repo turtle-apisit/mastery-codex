@@ -11,9 +11,9 @@ Uploaded directly in this folder:
 
 ## Cast
 
-- [`party/`](party/) — companions who work with your material every day (Yuki, Bram, Sable)
-- [`npc/`](npc/) — the teacher you meet every day (Orin)
-- [`central/`](central/) — quality-assurance oversight of the whole system (Vesna, Kade, Ashen)
+- [`party/`](party/) — companions who work with your material every day (Lyra, Atlas, Polaris)
+- [`npc/`](npc/) — the teacher you meet every day (Vega)
+- [`central/`](central/) — quality-assurance oversight of the whole system (Rigel, Corvus, Antares)
 
 Each subfolder's README lists the exact filename expected for that character's portrait.
 

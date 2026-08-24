@@ -49,7 +49,7 @@ export function deriveStatus(score: number): Status {
  * that's dropped 10+ points from where it once was) — not from comparing
  * last_reviewed against wall-clock "now", which would silently flag more
  * and more of the vault as rusty the longer the seed data goes untouched,
- * regardless of whether Bram ever actually logged a rust-check. Sable is
+ * regardless of whether Atlas ever actually logged a rust-check. Polaris is
  * the one that watches the calendar and decides when to log a fresh
  * rust-check; this just reflects what's already been logged.
  */
@@ -288,13 +288,13 @@ export type Agent = {
 };
 
 const TIER_BY_SLUG: Record<string, AgentTier> = {
-  yuki: "Party",
-  bram: "Party",
-  sable: "Party",
-  orin: "NPC",
-  vesna: "Central",
-  kade: "Central",
-  ashen: "Central",
+  lyra: "Party",
+  atlas: "Party",
+  polaris: "Party",
+  vega: "NPC",
+  rigel: "Central",
+  corvus: "Central",
+  antares: "Central",
 };
 
 const SHARED_CONTRACT_HEADING = "## Shared contract";

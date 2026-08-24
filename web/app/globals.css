@@ -552,10 +552,14 @@ button{font-family:inherit;}
 
 /* ---------- shared status primitives ---------- */
 .tag{
+  display:inline-flex;
+  align-items:center;
+  gap:var(--sp-2);
   font-family:var(--font-mono);
-  font-size:10.5px;
-  padding:2.5px 6px;
+  font-size:var(--step--1);
+  padding:var(--sp-1) var(--sp-3);
   border:1px solid var(--border-strong);
+  border-radius:var(--r-pill);
   color:var(--text-muted);
   white-space:nowrap;
 }
@@ -564,7 +568,7 @@ button{font-family:inherit;}
 .tag.untrained{color:var(--untrained);border-color:var(--untrained);background:var(--untrained-soft);}
 .tag.locked{color:var(--locked);border-color:var(--locked);background:var(--locked-soft);}
 .tag.rusty{color:var(--rusty);border-color:var(--rusty);}
-.dot{width:9px;height:9px;flex:none;display:inline-block;}
+.dot{width:8px;height:8px;flex:none;display:inline-block;border-radius:50%;}
 .dot.mastered{background:var(--mastered);}
 .dot.training{background:var(--training);}
 .dot.untrained{background:var(--untrained);}
