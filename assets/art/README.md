@@ -2,15 +2,25 @@
 
 Reference art for the Mastery Codex UI mockup.
 
-Expected files (upload directly into this folder):
+## Player &amp; world
 
-- `character-portrait.png` — character illustration, used in the Character section of the dashboard mockup.
-- `town-hub-background.png` — MMO town scene, used as the hero banner above the Character section.
+Uploaded directly in this folder:
+
+- `img-main-character.png` — player character portrait, used in the Character section of the dashboard mockup.
+- `bg-city.png` — MMO town scene, used as the hero banner above the Character section.
+
+## Cast
+
+- [`party/`](party/) — companions who work with your material every day (Yuki, Bram, Sable)
+- [`npc/`](npc/) — the teacher you meet every day (Orin)
+- [`central/`](central/) — quality-assurance oversight of the whole system (Vesna, Kade, Ashen)
+
+Each subfolder's README lists the exact filename expected for that character's portrait.
 
 ## How to upload
 
-1. Go to this folder on GitHub, on the `claude/sawasdee-tx0u3m` branch:
-   `https://github.com/turtle-apisit/mastery-codex/tree/claude/sawasdee-tx0u3m/assets/art`
+1. Go to the relevant subfolder on GitHub, on the `claude/sawasdee-tx0u3m` branch, e.g.
+   `https://github.com/turtle-apisit/mastery-codex/tree/claude/sawasdee-tx0u3m/assets/art/party`
 2. Click **Add file → Upload files**.
-3. Drag in the image(s), using the filenames above (or any name — just mention the name used).
+3. Drag in the image, named per that folder's README.
 4. Make sure the commit target is the `claude/sawasdee-tx0u3m` branch, then commit.
