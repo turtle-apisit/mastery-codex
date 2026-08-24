@@ -4,6 +4,7 @@ import TopNav from "@/components/TopNav";
 import MatrixRain from "@/components/MatrixRain";
 import HudFrame from "@/components/HudFrame";
 import BootSequence from "@/components/BootSequence";
+import EventToasts from "@/components/EventToasts";
 import { getAllConcepts, getCycleInfo, getJobSummaries, getStreak } from "@/lib/vault";
 import "./globals.css";
 
@@ -40,13 +41,22 @@ export default function RootLayout({
   const totalXp = unlocked.reduce((s, c) => s + c.score, 0);
   const maxXp = unlocked.length * 100;
 
+  const streak = getStreak();
   const hud = {
     level: jobs.reduce((s, j) => s + j.level, 0),
     xpPct: maxXp ? Math.round((totalXp / maxXp) * 100) : 0,
-    streak: getStreak(),
+    streak,
     bossPrep: cycle.bossPrep,
     week: cycle.week,
     lengthWeeks: cycle.lengthWeeks,
+  };
+
+  const snapshot = {
+    jobLevels: Object.fromEntries(jobs.map((j) => [j.subject, j.level])),
+    mastered: concepts
+      .filter((c) => !c.locked && c.status === "mastered")
+      .map((c) => c.skill_name),
+    streak,
   };
 
   return (
@@ -58,6 +68,7 @@ export default function RootLayout({
         <HudFrame />
         <TopNav hud={hud} />
         {children}
+        <EventToasts snapshot={snapshot} />
         <BootSequence />
       </body>
     </html>
