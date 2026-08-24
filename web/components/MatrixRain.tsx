@@ -38,15 +38,15 @@ export default function MatrixRain() {
     window.addEventListener("resize", resize);
 
     function draw() {
-      ctx!.fillStyle = "rgba(18,20,28,0.13)";
+      ctx!.fillStyle = "rgba(5,13,20,0.13)";
       ctx!.fillRect(0, 0, canvas!.width, canvas!.height);
       ctx!.font = FONT_SIZE + "px 'IBM Plex Mono', monospace";
       for (let i = 0; i < columns; i++) {
         const glyph = GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
-        const isGold = Math.random() > 0.85;
-        ctx!.fillStyle = isGold
-          ? "rgba(231,176,76,0.75)"
-          : "rgba(160,155,210,0.68)";
+        const isBright = Math.random() > 0.85;
+        ctx!.fillStyle = isBright
+          ? "rgba(214,247,255,0.85)"
+          : "rgba(79,214,240,0.6)";
         ctx!.fillText(glyph, i * FONT_SIZE, drops[i] * FONT_SIZE);
         if (drops[i] * FONT_SIZE > canvas!.height && Math.random() > 0.975) {
           drops[i] = 0;

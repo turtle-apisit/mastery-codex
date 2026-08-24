@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Silkscreen, IBM_Plex_Sans_Thai, IBM_Plex_Mono } from "next/font/google";
+import { Rajdhani, IBM_Plex_Sans_Thai, IBM_Plex_Mono } from "next/font/google";
 import TopNav from "@/components/TopNav";
 import "./globals.css";
 
-const silkscreen = Silkscreen({
-  weight: ["400", "700"],
+const rajdhani = Rajdhani({
+  weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
-  variable: "--font-silkscreen",
+  variable: "--font-rajdhani",
 });
 
 const plexSansThai = IBM_Plex_Sans_Thai({
@@ -32,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${silkscreen.variable} ${plexSansThai.variable} ${plexMono.variable}`}
+        className={`${rajdhani.variable} ${plexSansThai.variable} ${plexMono.variable}`}
       >
         <TopNav />
         {children}

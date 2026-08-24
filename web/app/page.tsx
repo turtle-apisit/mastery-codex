@@ -43,7 +43,7 @@ export default function CharacterPage() {
             position: "absolute",
             inset: 0,
             background:
-              "linear-gradient(180deg, rgba(18,20,28,.22) 0%, rgba(18,20,28,.68) 58%, var(--surface) 100%)",
+              "linear-gradient(180deg, rgba(5,13,20,.22) 0%, rgba(5,13,20,.68) 58%, var(--surface) 100%)",
           }}
         />
       </div>
