@@ -445,6 +445,12 @@ button{font-family:inherit;}
     backdrop-filter:var(--glass-blur);
     box-shadow:var(--e-2);
   }
+  /* the panel is the tightest thing on the page; on a phone it earns its
+     padding back for the graph */
+  @media (max-width:560px){
+    .inventory{padding:var(--sp-4) var(--sp-3);border-radius:var(--r-md);}
+  }
+
   .inv-head{
     display:flex;justify-content:space-between;align-items:center;
     flex-wrap:wrap;gap:var(--sp-3);margin-bottom:var(--sp-4);
@@ -464,9 +470,8 @@ button{font-family:inherit;}
     background:var(--accent-soft);
   }
 
-  /* graph / list switch */
   .view-toggle{
-    display:flex;gap:2px;padding:2px;
+    display:flex;gap:2px;padding:2px;flex:none;
     border:1px solid var(--border-strong);border-radius:var(--r-pill);
   }
   .view-btn{
@@ -475,6 +480,7 @@ button{font-family:inherit;}
     color:var(--text-muted);background:transparent;border:0;
     border-radius:var(--r-pill);padding:var(--sp-2) var(--sp-4);
     cursor:pointer;transition:color .15s ease,background .15s ease;
+    min-height:36px;
   }
   .view-btn:hover{color:var(--text);}
   .view-btn.active{color:var(--ground);background:var(--accent);}
@@ -493,6 +499,7 @@ button{font-family:inherit;}
     border-radius:var(--r-pill);
     padding:var(--sp-2) var(--sp-3) var(--sp-2) var(--sp-4);
     cursor:pointer;
+    min-height:36px;
     transition:color .15s ease,border-color .15s ease,background .15s ease;
   }
   /* dashed = a flag, not a bucket */
@@ -506,6 +513,19 @@ button{font-family:inherit;}
   .filter-btn.active{color:var(--ground);border-color:var(--accent);background:var(--accent);border-style:solid;}
   .filter-btn.active .filter-n{background:color-mix(in oklch, var(--ground) 22%, transparent);color:var(--ground);}
   .filter-btn.active .dot{background:var(--ground);border-color:var(--ground);}
+
+  /* Narrow screens: one horizontal strip that scrolls, rather than five rows
+     of wrapped pills eating the fold. */
+  @media (max-width:560px){
+    .filter-row{
+      flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;
+      margin-inline:calc(var(--sp-3) * -1);padding-inline:var(--sp-3);
+      scroll-snap-type:x proximity;
+    }
+    .filter-row::-webkit-scrollbar{display:none;}
+    .filter-btn{flex:none;scroll-snap-align:start;}
+    .filter-sep{flex:none;height:20px;align-self:center;}
+  }
 
   .filter-note{
     margin:0 0 var(--sp-5);
@@ -529,11 +549,16 @@ button{font-family:inherit;}
   }
   .subject-head:hover{background:color-mix(in oklch, var(--surface-2) 60%, transparent);}
   .subject-name{
-    flex:1;
+    flex:1;min-width:0;
     font-family:var(--font-mono);font-size:var(--step--1);
     letter-spacing:.12em;text-transform:uppercase;color:var(--text);
   }
-  .subject-meta{font-family:var(--font-mono);font-size:var(--step--1);color:var(--text-faint);}
+  .subject-meta{font-family:var(--font-mono);font-size:var(--step--1);color:var(--text-faint);flex:none;}
+  .subject-meta i{font-style:normal;}
+  @media (max-width:560px){
+    .subject-name{letter-spacing:.06em;font-size:11px;}
+    .subject-meta i{display:none;}
+  }
   .chev{
     width:0;height:0;flex:none;
     border-left:5px solid var(--text-faint);
@@ -542,54 +567,176 @@ button{font-family:inherit;}
   }
   .chev.closed{transform:rotate(0deg);}
 
-  /* wide graphs scroll inside the card; the page body never scrolls sideways */
-  .graph-scroll{overflow-x:auto;padding:var(--sp-2) 0;}
-  .skill-graph{display:block;}
+  /* ---------- neural network view ---------- */
 
-  .edge{
+  .neural{display:flex;flex-direction:column;}
+
+  /* The stage is a camera onto the graph, not a window it overflows. It never
+     scrolls the page sideways at any width; you pan inside it instead. */
+  .neural-stage{
+    position:relative;
+    height:clamp(340px, 64vh, 720px);
+    overflow:hidden;
+    cursor:grab;
+    touch-action:none; /* we own the gesture: browser pan/zoom must not fight it */
+    background:
+      radial-gradient(ellipse 70% 60% at 30% 30%, color-mix(in oklch, var(--accent) 7%, transparent), transparent 70%),
+      radial-gradient(ellipse 60% 70% at 80% 70%, color-mix(in oklch, var(--rusty) 5%, transparent), transparent 70%),
+      var(--ground);
+  }
+  .neural-stage.grabbing{cursor:grabbing;}
+  .neural-svg{display:block;width:100%;height:100%;user-select:none;}
+
+  .synapse{
     fill:none;
     stroke:var(--border-strong);
-    stroke-width:1.25;
-    color:var(--border-strong);
-    transition:stroke .15s ease,opacity .15s ease;
-    opacity:.55;
-  }
-  .edge.lit{stroke:var(--accent);color:var(--accent);opacity:1;stroke-width:1.75;}
-
-  .gnode{cursor:pointer;}
-  .gnode:focus{outline:none;}
-  .gnode:focus-visible .gnode-box{stroke:var(--accent);stroke-width:2;}
-  .gnode-box{
-    fill:var(--surface-2);
-    stroke:var(--border-strong);
     stroke-width:1;
-    transition:fill .15s ease,stroke .15s ease;
+    opacity:.45;
+    transition:stroke .2s ease,opacity .2s ease,stroke-width .2s ease;
   }
-  .gnode-stripe{fill:var(--border-strong);transition:fill .15s ease;}
-  .gnode-label{
-    fill:var(--text);
-    font-family:var(--font-body);
-    font-size:10.5px;
-    transition:fill .15s ease;
+  .synapse.lit{
+    stroke:var(--accent);
+    stroke-width:1.6;
+    opacity:.95;
+    filter:drop-shadow(0 0 3px color-mix(in oklch, var(--accent) 60%, transparent));
+    /* the dash is the signal; it runs the length of its own synapse so every
+       link fires at the same speed regardless of length */
+    animation:synapse-fire 1.5s linear infinite;
   }
-  .gnode-flag{font-size:10px;text-anchor:end;}
-  .gnode-flag.lock{fill:var(--locked);}
-  .gnode-flag.rust{fill:var(--rusty);}
+  @keyframes synapse-fire{
+    from{stroke-dashoffset:calc(var(--len) * 1px);}
+    to{stroke-dashoffset:0;}
+  }
 
-  .gnode.mastered .gnode-stripe{fill:var(--mastered);}
-  .gnode.training .gnode-stripe{fill:var(--training);}
-  .gnode.untrained .gnode-stripe{fill:var(--untrained);}
-  /* Locked and rusty are flags laid over the status, not replacements for it.
-     The stripe keeps reporting where the skill stands, the hollow box reports
-     that it is gated, the dashed outline reports that it has decayed. */
-  .gnode.locked .gnode-box{fill:transparent;stroke-dasharray:3 3;}
-  .gnode.locked .gnode-label{fill:var(--text-faint);}
-  .gnode.rusty .gnode-box{stroke:var(--rusty);}
+  .neuron{cursor:pointer;}
+  .neuron:focus{outline:none;}
+  .halo{pointer-events:none;transition:opacity .2s ease;}
+  .soma{
+    fill:color-mix(in oklch, var(--surface-2) 88%, transparent);
+    stroke:var(--border-strong);
+    stroke-width:1.5;
+    transition:stroke .2s ease,fill .2s ease;
+  }
+  .nucleus{fill:var(--border-strong);transition:fill .2s ease;}
+  .rust-ring{
+    fill:none;stroke:var(--rusty);stroke-width:1;
+    stroke-dasharray:2 3;opacity:.85;
+  }
+  .axon-label{
+    fill:var(--text-muted);
+    font-family:var(--font-mono);
+    font-size:11px;
+    text-anchor:middle;
+    pointer-events:none;
+    transition:fill .2s ease;
+  }
 
-  .gnode:hover .gnode-box{stroke:var(--accent);}
-  .gnode.selected .gnode-box{stroke:var(--accent);stroke-width:2;fill:var(--surface-3);}
-  .gnode.dim{opacity:.22;}
-  .gnode.lit{opacity:1;}
+  .neuron.mastered .soma{stroke:var(--mastered);}
+  .neuron.mastered .nucleus{fill:var(--mastered);}
+  .neuron.training .soma{stroke:var(--training);}
+  .neuron.training .nucleus{fill:var(--training);}
+  .neuron.untrained .soma{stroke:var(--untrained);}
+  .neuron.untrained .nucleus{fill:var(--untrained);}
+  /* locked and rusty are flags over the status, not replacements for it: the
+     nucleus keeps reporting where the skill stands while the hollow dashed
+     soma reports that it is gated */
+  .neuron.locked .soma{stroke:var(--locked);stroke-dasharray:3 3;fill:transparent;}
+  .neuron.locked .axon-label{fill:var(--text-faint);}
+
+  .neuron:hover .soma{stroke:var(--accent);}
+  .neuron:hover .axon-label{fill:var(--text);}
+  .neuron:focus-visible .soma{stroke:var(--accent);stroke-width:2.5;}
+  .neuron.selected .soma{
+    stroke:var(--accent);stroke-width:2.5;
+    fill:color-mix(in oklch, var(--accent) 18%, var(--surface-3));
+  }
+  .neuron.selected .nucleus{fill:var(--accent);}
+  .neuron.selected .axon-label{fill:var(--accent);}
+  .neuron.selected .halo{animation:neuron-pulse 2s ease-in-out infinite;}
+  @keyframes neuron-pulse{
+    0%,100%{opacity:.75;transform:scale(1);}
+    50%{opacity:1;transform:scale(1.14);}
+  }
+  .neuron.dim{opacity:.16;}
+  .neuron.dim .axon-label{opacity:0;}
+  .neuron.lit{opacity:1;}
+
+  .neural-controls{
+    position:absolute;right:var(--sp-3);bottom:var(--sp-3);
+    display:flex;flex-direction:column;gap:var(--sp-1);
+  }
+  .neural-controls button{
+    width:36px;height:36px;
+    display:grid;place-items:center;
+    font-family:var(--font-mono);font-size:15px;line-height:1;
+    color:var(--text-muted);
+    background:color-mix(in oklch, var(--surface) 82%, transparent);
+    backdrop-filter:blur(6px);
+    border:1px solid var(--border-strong);border-radius:var(--r-sm);
+    cursor:pointer;transition:color .15s ease,border-color .15s ease;
+  }
+  .neural-controls button.wide{width:36px;font-size:9px;letter-spacing:.08em;text-transform:uppercase;}
+  .neural-controls button:hover{color:var(--accent);border-color:var(--accent);}
+
+  .neural-hint{
+    position:absolute;left:50%;bottom:var(--sp-3);transform:translateX(-50%);
+    margin:0;padding:var(--sp-1) var(--sp-3);
+    font-family:var(--font-mono);font-size:10px;letter-spacing:.06em;
+    color:var(--text-faint);
+    background:color-mix(in oklch, var(--surface) 80%, transparent);
+    border:1px solid var(--border);border-radius:var(--r-pill);
+    pointer-events:none;white-space:nowrap;
+  }
+
+  /* selection readout — this is how the graph is read on a phone, where the
+     labels are too small to lean on */
+  .readout{
+    border-top:1px solid var(--border);
+    background:color-mix(in oklch, var(--surface-2) 55%, transparent);
+    padding:var(--sp-3) var(--sp-4) var(--sp-4);
+  }
+  .readout-head{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap;margin-bottom:var(--sp-3);}
+  .readout-head strong{font-size:var(--step-1);font-weight:600;color:var(--text);}
+  .readout-tags{display:inline-flex;gap:var(--sp-1);flex-wrap:wrap;}
+  .rtag{
+    font-family:var(--font-mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+    padding:2px var(--sp-2);border-radius:var(--r-pill);
+    border:1px solid currentColor;
+  }
+  .rtag.mastered{color:var(--mastered);}
+  .rtag.training{color:var(--training);}
+  .rtag.untrained{color:var(--untrained);}
+  .rtag.locked{color:var(--locked);}
+  .rtag.rusty{color:var(--rusty);border-style:dashed;}
+  .readout-x{
+    margin-left:auto;width:28px;height:28px;flex:none;
+    display:grid;place-items:center;
+    color:var(--text-faint);background:transparent;
+    border:1px solid var(--border);border-radius:var(--r-sm);
+    cursor:pointer;font-size:11px;
+  }
+  .readout-x:hover{color:var(--text);border-color:var(--border-strong);}
+  .readout-body{display:grid;grid-template-columns:1fr;gap:var(--sp-4);}
+  @container (min-width:620px){
+    .readout-body{grid-template-columns:1fr 1fr;}
+  }
+  .readout-label{
+    display:block;margin-bottom:var(--sp-2);
+    font-family:var(--font-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--text-faint);
+  }
+  .readout-links{display:flex;flex-wrap:wrap;gap:var(--sp-2);}
+  .readout-links button{
+    display:inline-flex;align-items:center;gap:var(--sp-2);
+    font-size:var(--step--1);color:var(--text-muted);
+    background:color-mix(in oklch, var(--surface-3) 55%, transparent);
+    border:1px solid var(--border);border-radius:var(--r-sm);
+    padding:var(--sp-2) var(--sp-3);cursor:pointer;
+    min-height:34px;text-align:left;
+    transition:color .15s ease,border-color .15s ease;
+  }
+  .readout-links button:hover{color:var(--text);border-color:var(--accent);}
+  .readout-none{margin:0;font-size:var(--step--1);color:var(--text-faint);}
 
   /* list view */
   .inv-grid{display:grid;grid-template-columns:1fr;gap:var(--sp-2);padding:var(--sp-4);}
@@ -981,6 +1128,8 @@ button{font-family:inherit;}
   .bar-eased{transition:none;}
   .bar-shine{animation:none;opacity:0;}
   .tile,.inv-chip,.cast-chip{transition:none;}
-  .edge,.gnode,.gnode-box,.gnode-stripe,.gnode-label,.chev{transition:none;}
+  .synapse,.neuron,.soma,.nucleus,.axon-label,.halo,.chev{transition:none;}
+  .synapse.lit{animation:none;stroke-dasharray:none;}
+  .neuron.selected .halo{animation:none;}
   .tile:hover,.inv-chip:hover,.cast-chip:hover{transform:none;}
 }

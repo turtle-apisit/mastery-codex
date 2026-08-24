@@ -1,26 +1,22 @@
 import type { Concept } from "./vault";
 
 /**
- * Lays a subject's prerequisite graph out as a left-to-right DAG: column =
- * how many prerequisites deep a concept sits, so reading left to right is
- * reading "what must I learn first".
- *
- * A force-directed layout would scatter the same data into a blob; the whole
- * point of this graph is the ordering, so the ordering gets the axis.
+ * Lays a subject's prerequisite graph out as a neural network: neurons in
+ * layers, synapses between them. The layer index is still prerequisite depth,
+ * so left to right remains "what has to be learned first" — the organic look
+ * sits on top of a layout that means something, rather than replacing it with
+ * a force-directed blob that means nothing.
  */
 
-export const NODE_W = 180;
-export const NODE_H = 48;
-export const COL_GAP = 76;
-export const ROW_GAP = 14;
-export const PAD = 20;
+export const NODE_R = 9; // base neuron radius, grown by connection count
+export const MAX_R = 17;
+export const COL_PITCH = 156;
+export const ROW_PITCH = 72;
+export const PAD = 46;
 
-const COL_PITCH = NODE_W + COL_GAP;
-const ROW_PITCH = NODE_H + ROW_GAP;
-
-/** Roughly how many characters fit on one line inside a node. */
-const CHARS_PER_LINE = 26;
-const MAX_LINES = 3;
+/** Label wrap width under a neuron, in characters. */
+const CHARS_PER_LINE = 17;
+const MAX_LINES = 2;
 
 export type GraphNode = {
   concept: Concept;
@@ -28,13 +24,18 @@ export type GraphNode = {
   row: number;
   x: number;
   y: number;
+  r: number;
+  /** in + out connections; drives radius, so hubs read as hubs */
+  degree: number;
   lines: string[];
 };
 
 export type GraphEdge = {
-  from: string; // slug
-  to: string; // slug
-  d: string; // svg path
+  from: string;
+  to: string;
+  d: string;
+  /** path length, so a signal pulse runs at the same speed on every synapse */
+  len: number;
 };
 
 export type SubjectGraph = {
@@ -42,18 +43,15 @@ export type SubjectGraph = {
   edges: GraphEdge[];
   width: number;
   height: number;
-  /** slug -> every slug it transitively depends on */
   ancestors: Map<string, Set<string>>;
-  /** slug -> every slug that transitively depends on it */
   descendants: Map<string, Set<string>>;
+  byId: Map<string, GraphNode>;
 };
 
-/** Greedy word wrap, ellipsised if it would run past MAX_LINES. */
 function wrap(label: string): string[] {
   const words = label.split(" ");
   const lines: string[] = [];
   let cur = "";
-
   for (const w of words) {
     const next = cur ? `${cur} ${w}` : w;
     if (next.length <= CHARS_PER_LINE) {
@@ -65,10 +63,9 @@ function wrap(label: string): string[] {
     if (lines.length === MAX_LINES) break;
   }
   if (cur && lines.length < MAX_LINES) lines.push(cur);
-
   if (lines.length === MAX_LINES) {
-    const consumed = lines.join(" ").length;
-    if (consumed < label.length - 1) {
+    const shown = lines.join(" ").length;
+    if (shown < label.length - 1) {
       const last = lines[MAX_LINES - 1];
       lines[MAX_LINES - 1] =
         last.length > CHARS_PER_LINE - 1
@@ -79,12 +76,18 @@ function wrap(label: string): string[] {
   return lines;
 }
 
+/** Deterministic -1..1 from a slug, so the organic jitter never moves between renders. */
+function jitter(seed: string): number {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) | 0;
+  return ((Math.abs(h) % 1000) / 1000) * 2 - 1;
+}
+
 export function buildGraph(concepts: Concept[]): SubjectGraph {
   const byName = new Map(concepts.map((c) => [c.skill_name, c]));
 
-  // Prerequisites may name a concept in another subject (Lyra flags those in
-  // its capture summary rather than linking them), so edges are filtered to
-  // this subject only. That also guarantees every edge has both endpoints.
+  // A prerequisite can name a concept in another subject; those are dropped so
+  // every edge is guaranteed both endpoints in this graph.
   const parentsOf = new Map<string, Concept[]>();
   for (const c of concepts) {
     parentsOf.set(
@@ -94,9 +97,14 @@ export function buildGraph(concepts: Concept[]): SubjectGraph {
         .filter((p): p is Concept => Boolean(p))
     );
   }
+  const childrenOf = new Map<string, Concept[]>();
+  for (const c of concepts) childrenOf.set(c.slug, []);
+  for (const c of concepts) {
+    for (const p of parentsOf.get(c.slug) ?? []) childrenOf.get(p.slug)!.push(c);
+  }
 
-  // Depth = longest path from a root. `visiting` keeps a malformed vault with
-  // a prerequisite cycle from hanging the page instead of just rendering oddly.
+  // Depth = longest path from a root. `visiting` stops a malformed vault with a
+  // prerequisite cycle from hanging the page.
   const depth = new Map<string, number>();
   const visiting = new Set<string>();
   function depthOf(c: Concept): number {
@@ -105,9 +113,7 @@ export function buildGraph(concepts: Concept[]): SubjectGraph {
     if (visiting.has(c.slug)) return 0;
     visiting.add(c.slug);
     const parents = parentsOf.get(c.slug) ?? [];
-    const d = parents.length
-      ? 1 + Math.max(...parents.map((p) => depthOf(p)))
-      : 0;
+    const d = parents.length ? 1 + Math.max(...parents.map(depthOf)) : 0;
     visiting.delete(c.slug);
     depth.set(c.slug, d);
     return d;
@@ -117,19 +123,15 @@ export function buildGraph(concepts: Concept[]): SubjectGraph {
   const maxCol = concepts.reduce((m, c) => Math.max(m, depth.get(c.slug)!), 0);
   const columns: Concept[][] = Array.from({ length: maxCol + 1 }, () => []);
   for (const c of concepts) columns[depth.get(c.slug)!].push(c);
-  for (const col of columns) col.sort((a, b) => a.skill_name.localeCompare(b.skill_name));
+  for (const col of columns)
+    col.sort((a, b) => a.skill_name.localeCompare(b.skill_name));
 
-  // Crossing reduction: repeatedly pull each node toward the average row of
-  // the nodes it connects to. This is the barycentre heuristic, which gets
-  // most of the benefit without the machinery of a full Sugiyama pass.
+  // Crossing reduction by the barycentre heuristic: pull each node toward the
+  // average row of what it connects to. Four sweeps is where this converges on
+  // the real vault; it gets most of the benefit of a full Sugiyama pass without
+  // the machinery.
   const row = new Map<string, number>();
   columns.forEach((col) => col.forEach((c, i) => row.set(c.slug, i)));
-
-  const childrenOf = new Map<string, Concept[]>();
-  for (const c of concepts) childrenOf.set(c.slug, []);
-  for (const c of concepts) {
-    for (const p of parentsOf.get(c.slug) ?? []) childrenOf.get(p.slug)!.push(c);
-  }
 
   function sweep(order: number[], pick: (c: Concept) => Concept[]) {
     for (const i of order) {
@@ -144,58 +146,79 @@ export function buildGraph(concepts: Concept[]): SubjectGraph {
             : idx
         );
       });
-      col.sort((a, b) => (bary.get(a.slug)! - bary.get(b.slug)!) || a.skill_name.localeCompare(b.skill_name));
+      col.sort(
+        (a, b) =>
+          bary.get(a.slug)! - bary.get(b.slug)! ||
+          a.skill_name.localeCompare(b.skill_name)
+      );
       col.forEach((c, idx) => row.set(c.slug, idx));
     }
   }
-
   const forward = columns.map((_, i) => i);
   const backward = [...forward].reverse();
-  // Four sweeps is where this converges on the real vault (8 gives the same
-  // result); two was still leaving crossings on the table.
   for (let pass = 0; pass < 4; pass++) {
     sweep(forward, (c) => parentsOf.get(c.slug) ?? []);
     sweep(backward, (c) => childrenOf.get(c.slug) ?? []);
   }
 
   const tallest = columns.reduce((m, col) => Math.max(m, col.length), 0);
-  const height = PAD * 2 + tallest * ROW_PITCH - ROW_GAP;
-  const width = PAD * 2 + columns.length * COL_PITCH - COL_GAP;
+  const height = PAD * 2 + Math.max(0, tallest - 1) * ROW_PITCH;
+  const width = PAD * 2 + maxCol * COL_PITCH;
 
-  // Centre each column vertically so short columns don't hug the top edge.
+  const degreeOf = (c: Concept) =>
+    (parentsOf.get(c.slug)?.length ?? 0) + (childrenOf.get(c.slug)?.length ?? 0);
+  const maxDegree = Math.max(1, ...concepts.map(degreeOf));
+
   const nodes: GraphNode[] = [];
-  const pos = new Map<string, { x: number; y: number }>();
+  const byId = new Map<string, GraphNode>();
   columns.forEach((col, ci) => {
-    const colHeight = col.length * ROW_PITCH - ROW_GAP;
+    const colHeight = (col.length - 1) * ROW_PITCH;
     const top = PAD + (height - PAD * 2 - colHeight) / 2;
     col.forEach((c, ri) => {
-      const x = PAD + ci * COL_PITCH;
-      const y = top + ri * ROW_PITCH;
-      pos.set(c.slug, { x, y });
-      nodes.push({ concept: c, col: ci, row: ri, x, y, lines: wrap(c.skill_name) });
+      const degree = degreeOf(c);
+      // Jitter keeps the layers readable while stopping the whole thing from
+      // looking like a spreadsheet. Seeded from the slug, so it never moves.
+      const node: GraphNode = {
+        concept: c,
+        col: ci,
+        row: ri,
+        x: PAD + ci * COL_PITCH + jitter(c.slug) * 12,
+        y: top + ri * ROW_PITCH + jitter(c.slug + "|y") * 8,
+        r: NODE_R + (degree / maxDegree) * (MAX_R - NODE_R),
+        degree,
+        lines: wrap(c.skill_name),
+      };
+      nodes.push(node);
+      byId.set(c.slug, node);
     });
   });
 
+  // Synapses leave and enter at the rim of the neuron rather than its centre,
+  // so a curve never vanishes under the node it is attached to.
   const edges: GraphEdge[] = [];
   for (const c of concepts) {
     for (const p of parentsOf.get(c.slug) ?? []) {
-      const a = pos.get(p.slug)!;
-      const b = pos.get(c.slug)!;
-      const x1 = a.x + NODE_W;
-      const y1 = a.y + NODE_H / 2;
-      const x2 = b.x;
-      const y2 = b.y + NODE_H / 2;
-      const bend = Math.max(28, (x2 - x1) * 0.45);
+      const a = byId.get(p.slug)!;
+      const b = byId.get(c.slug)!;
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const dist = Math.hypot(dx, dy) || 1;
+      const ux = dx / dist;
+      const uy = dy / dist;
+      const x1 = a.x + ux * (a.r + 2);
+      const y1 = a.y + uy * (a.r + 2);
+      const x2 = b.x - ux * (b.r + 6);
+      const y2 = b.y - uy * (b.r + 6);
+      const bend = Math.max(22, Math.abs(x2 - x1) * 0.5);
       edges.push({
         from: p.slug,
         to: c.slug,
-        d: `M ${x1} ${y1} C ${x1 + bend} ${y1}, ${x2 - bend} ${y2}, ${x2} ${y2}`,
+        d: `M ${x1.toFixed(1)} ${y1.toFixed(1)} C ${(x1 + bend).toFixed(1)} ${y1.toFixed(1)}, ${(x2 - bend).toFixed(1)} ${y2.toFixed(1)}, ${x2.toFixed(1)} ${y2.toFixed(1)}`,
+        len: Math.max(1, Math.round(Math.hypot(x2 - x1, y2 - y1) * 1.2)),
       });
     }
   }
 
-  // Transitive closure both ways, so selecting a node can light up everything
-  // it needs and everything that needs it.
   const ancestors = new Map<string, Set<string>>();
   const descendants = new Map<string, Set<string>>();
   function collect(
@@ -206,7 +229,7 @@ export function buildGraph(concepts: Concept[]): SubjectGraph {
     const hit = cache.get(slug);
     if (hit) return hit;
     const out = new Set<string>();
-    cache.set(slug, out); // guards cycles
+    cache.set(slug, out); // also guards cycles
     for (const n of step(slug)) {
       out.add(n.slug);
       for (const deep of collect(n.slug, step, cache)) out.add(deep);
@@ -218,5 +241,5 @@ export function buildGraph(concepts: Concept[]): SubjectGraph {
     collect(c.slug, (s) => childrenOf.get(s) ?? [], descendants);
   }
 
-  return { nodes, edges, width, height, ancestors, descendants };
+  return { nodes, edges, width, height, ancestors, descendants, byId };
 }
