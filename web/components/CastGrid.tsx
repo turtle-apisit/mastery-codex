@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import PortraitFx from "@/components/PortraitFx";
 import type { Agent, AgentTier } from "@/lib/vault";
 import { BIOS } from "@/lib/bios";
 
@@ -23,39 +24,25 @@ function roleTitle(description: string): string {
   return description.split(" (")[0];
 }
 
-function Portrait({ agent }: { agent: Agent }) {
-  return (
-    <div className="cast-portrait">
-      <div className="cast-ring" aria-hidden="true" />
-      <div className="cast-ring inner" aria-hidden="true" />
-      <span className="cast-flame cf1" aria-hidden="true"><i /></span>
-      <span className="cast-flame cf2" aria-hidden="true"><i /></span>
-      <span className="cast-ember ce1" aria-hidden="true" />
-      <span className="cast-ember ce2" aria-hidden="true" />
-      <span className="cast-ember ce3" aria-hidden="true" />
-      <span className="cast-twinkle" style={{ top: "8%", left: "12%", animationDuration: "1.7s", animationDelay: "0s" }} aria-hidden="true" />
-      <span className="cast-twinkle" style={{ top: "16%", left: "84%", animationDuration: "2.1s", animationDelay: ".5s" }} aria-hidden="true" />
-      <span className="cast-twinkle" style={{ top: "70%", left: "20%", animationDuration: "1.9s", animationDelay: "1s" }} aria-hidden="true" />
-      <Image src={artPath(agent)} alt={`${agent.name} portrait`} fill style={{ objectFit: "contain" }} />
-      <div className="cast-portrait-scrim" aria-hidden="true">
-        <span className="cast-name">{agent.name}</span>
-        <span className="cast-role">{roleTitle(agent.description)}</span>
-      </div>
-    </div>
-  );
-}
-
 export default function CastGrid({ agents, contract }: { agents: Agent[]; contract: string }) {
-  const availableTiers = useMemo(
-    () => TIER_ORDER.filter((t) => agents.some((a) => a.tier === t.tier)),
-    [agents]
-  );
+  const availableTiers = TIER_ORDER.filter((t) => agents.some((a) => a.tier === t.tier));
   const [activeTier, setActiveTier] = useState<AgentTier>(availableTiers[0]?.tier ?? "Party");
-  const [selected, setSelected] = useState<Agent | null>(null);
   const [contractOpen, setContractOpen] = useState(false);
 
   const active = availableTiers.find((t) => t.tier === activeTier) ?? availableTiers[0];
   const members = agents.filter((a) => a.tier === active?.tier);
+
+  const [selectedSlug, setSelectedSlug] = useState<string | undefined>(members[0]?.slug);
+  const selected = agents.find((a) => a.slug === selectedSlug) ?? members[0];
+
+  // switching tier: jump the selection to that tier's first member, like
+  // picking a new roster page in a character-select screen
+  useEffect(() => {
+    if (!members.some((m) => m.slug === selectedSlug)) {
+      setSelectedSlug(members[0]?.slug);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTier]);
 
   return (
     <>
@@ -91,53 +78,47 @@ export default function CastGrid({ agents, contract }: { agents: Agent[]; contra
         <span className="cast-tabs-desc">{active?.desc}</span>
       </div>
 
-      <div className="cast-strip">
+      <div className="cast-select-row">
         {members.map((agent) => (
           <button
             key={agent.slug}
             type="button"
-            className={"cast-card" + (selected?.slug === agent.slug ? " selected" : "")}
-            onClick={() => setSelected(agent)}
+            className={"cast-chip" + (agent.slug === selected?.slug ? " active" : "")}
+            onClick={() => setSelectedSlug(agent.slug)}
           >
-            <Portrait agent={agent} />
+            <span className="cast-chip-portrait">
+              <Image src={artPath(agent)} alt="" fill style={{ objectFit: "contain" }} />
+            </span>
+            <span className="cast-chip-name">{agent.name}</span>
           </button>
         ))}
       </div>
 
-      <div className="panel cast-detail" id="cast-detail" style={{ marginTop: 20 }}>
-        <h2>Agent Detail</h2>
-        {selected ? (
-          <div className="cast-detail-grid">
-            <div className="cast-detail-portrait">
-              <Portrait agent={selected} />
+      {selected && (
+        <div className="cast-hero" key={selected.slug}>
+          <PortraitFx src={artPath(selected)} alt={`${selected.name} portrait`} />
+          <div className="cast-hero-body">
+            <div className="cast-detail-head">
+              <span className="cast-detail-name">{selected.name}</span>
+              <span className="cast-detail-tier">{selected.tier}</span>
             </div>
-            <div className="cast-detail-body">
-              <div className="cast-detail-head">
-                <span className="cast-detail-name">{selected.name}</span>
-                <span className="cast-detail-tier">{selected.tier}</span>
-              </div>
-              <div className="cast-detail-role">{roleTitle(selected.description)}</div>
-              <p className="cast-detail-bio">{BIOS[selected.slug]}</p>
-              <div className="cast-detail-spec-label">Full capability sheet</div>
-              <div className="cast-detail-section markdown-body">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{selected.body}</ReactMarkdown>
-              </div>
-              <div className="cast-detail-section">
-                <h3>Tools</h3>
-                <div className="cast-detail-tools">
-                  {selected.tools.map((t) => (
-                    <span className="tag" key={t}>{t}</span>
-                  ))}
-                </div>
+            <div className="cast-detail-role">{roleTitle(selected.description)}</div>
+            <p className="cast-detail-bio">{BIOS[selected.slug]}</p>
+            <div className="cast-detail-spec-label">Full capability sheet</div>
+            <div className="cast-detail-section markdown-body">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{selected.body}</ReactMarkdown>
+            </div>
+            <div className="cast-detail-section">
+              <h3>Tools</h3>
+              <div className="cast-detail-tools">
+                {selected.tools.map((t) => (
+                  <span className="tag" key={t}>{t}</span>
+                ))}
               </div>
             </div>
           </div>
-        ) : (
-          <p className="cast-detail-empty">
-            Click a cast member above to see their full role, procedure, output, and don&rsquo;ts.
-          </p>
-        )}
-      </div>
+        </div>
+      )}
     </>
   );
 }
