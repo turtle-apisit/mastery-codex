@@ -44,6 +44,12 @@ export default function CastGrid({ agents }: { agents: Agent[] }) {
                 >
                   <div className="cast-portrait">
                     <div className="cast-ring" aria-hidden="true" />
+                    <div className="cast-ring inner" aria-hidden="true" />
+                    <span className="cast-flame cf1" aria-hidden="true"><i /></span>
+                    <span className="cast-flame cf2" aria-hidden="true"><i /></span>
+                    <span className="cast-ember ce1" aria-hidden="true" />
+                    <span className="cast-ember ce2" aria-hidden="true" />
+                    <span className="cast-ember ce3" aria-hidden="true" />
                     <span className="cast-twinkle" style={{ top: "8%", left: "12%", animationDuration: "1.7s", animationDelay: "0s" }} aria-hidden="true" />
                     <span className="cast-twinkle" style={{ top: "16%", left: "84%", animationDuration: "2.1s", animationDelay: ".5s" }} aria-hidden="true" />
                     <span className="cast-twinkle" style={{ top: "70%", left: "20%", animationDuration: "1.9s", animationDelay: "1s" }} aria-hidden="true" />
