@@ -1,9 +1,11 @@
+import { ViewTransition } from "react";
 import { getExercises } from "@/lib/vault";
 
 export default function QuestsPage() {
   const exercises = getExercises();
 
   return (
+    <ViewTransition enter="page-in" exit="page-out" default="none">
     <div className="page">
       <section id="quests">
         <div className="eyebrow" style={{ marginBottom: 12 }}>
@@ -32,5 +34,6 @@ export default function QuestsPage() {
         </div>
       </section>
     </div>
+    </ViewTransition>
   );
 }

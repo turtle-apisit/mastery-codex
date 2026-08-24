@@ -1,9 +1,11 @@
+import { ViewTransition } from "react";
 import { getJobSummaries } from "@/lib/vault";
 
 export default function JobsPage() {
   const jobs = getJobSummaries();
 
   return (
+    <ViewTransition enter="page-in" exit="page-out" default="none">
     <div className="page">
       <section id="roster">
         <div className="eyebrow" style={{ marginBottom: 12 }}>
@@ -34,5 +36,6 @@ export default function JobsPage() {
         </div>
       </section>
     </div>
+    </ViewTransition>
   );
 }

@@ -1,3 +1,4 @@
+import { ViewTransition } from "react";
 import SkillTreeClient from "@/components/SkillTreeClient";
 import { getAllConcepts, getSubjects } from "@/lib/vault";
 
@@ -6,8 +7,10 @@ export default function SkillTreePage() {
   const subjects = getSubjects();
 
   return (
-    <div className="page">
-      <SkillTreeClient concepts={concepts} subjects={subjects} />
-    </div>
+    <ViewTransition enter="page-in" exit="page-out" default="none">
+      <div className="page">
+        <SkillTreeClient concepts={concepts} subjects={subjects} />
+      </div>
+    </ViewTransition>
   );
 }

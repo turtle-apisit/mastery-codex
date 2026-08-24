@@ -1,3 +1,4 @@
+import { ViewTransition } from "react";
 import { getQuestLog } from "@/lib/vault";
 
 function timeAgo(dateStr: string): string {
@@ -12,6 +13,7 @@ export default function LogPage() {
   const entries = getQuestLog().slice(0, 40);
 
   return (
+    <ViewTransition enter="page-in" exit="page-out" default="none">
     <div className="page">
       <section className="panel" id="log">
         <h2>Quest Log</h2>
@@ -36,5 +38,6 @@ export default function LogPage() {
         </ul>
       </section>
     </div>
+    </ViewTransition>
   );
 }
