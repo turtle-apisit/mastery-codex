@@ -27,78 +27,83 @@ export default function CharacterPage() {
 
   return (
     <div className="page">
-      <div className="cover-banner cut">
-        <Image
-          src="/art/town-hub-background.png"
-          alt="Mastery Codex hub"
-          fill
-          style={{
-            objectFit: "cover",
-            objectPosition: "center 35%",
-          }}
-          priority
-        />
-        <div
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "linear-gradient(180deg, rgba(5,13,20,.22) 0%, rgba(5,13,20,.68) 58%, var(--surface) 100%)",
-          }}
-        />
-      </div>
-
-      <section className="hud" id="character">
-        <div className="char-top">
-          <PortraitFx src="/art/character-portrait.png" alt="Character portrait" />
-
-          <div className="crest cut-sm">
-            <span className="crest-tag">LV</span>
-            <AnimatedNum value={baseLevel} className="crest-num num" />
-          </div>
-
-          <div className="hud-id">
-            <div className="eyebrow">Mastery Codex // Status Window</div>
-            <div className="char-title">AI Engineering Apprentice</div>
-            <div className="char-sub">
-              Strongest in {strongest?.subject ?? "—"} &middot;{" "}
-              <span className="streak">{streak}-day streak</span>
-            </div>
-            <div className="xp-row">
-              <AnimatedBar pct={xpPct} trackClass="xp-track" fillClass="xp-fill" />
-              <span className="xp-label num">
-                <AnimatedNum value={totalXp} /> / {maxXp} XP
-              </span>
-            </div>
-          </div>
-
-          <div className="cycle-block">
-            <div className="eyebrow">Exam Cycle {cycle.cycleNumber}</div>
-            <div className="cycle-pips">
-              {pips.map((p, i) => (
-                <span key={i} className={"pip" + (p ? ` ${p}` : "")} />
-              ))}
-            </div>
-            <div className="cycle-note">
-              Week {cycle.week} of {cycle.lengthWeeks}
-              {cycle.bossPrep ? (
-                <>
-                  {" "}
-                  &middot; <strong>Boss Prep active</strong>
-                </>
-              ) : (
-                <>
-                  {" "}
-                  &middot; Boss Prep starts in <strong>{cycle.daysUntilBossPrep} days</strong>
-                </>
-              )}
-            </div>
-          </div>
+      <section className="hero cut" id="character">
+        <div className="hero-art" aria-hidden="true">
+          <Image
+            src="/art/town-hub-background.png"
+            alt=""
+            fill
+            style={{ objectFit: "cover", objectPosition: "center 32%" }}
+            priority
+          />
         </div>
 
-        <SkillInventory concepts={concepts} />
+        <PortraitFx src="/art/character-portrait.png" alt="Character portrait" />
+
+        <div className="hero-id">
+          <div className="hero-eyebrow">Mastery Codex // Status Window</div>
+          <h1 className="hero-name">AI Engineering Apprentice</h1>
+          <div className="hero-meta">
+            <span>Strongest in {strongest?.subject ?? "—"}</span>
+            <span className="streak">{streak}-day streak</span>
+          </div>
+        </div>
       </section>
+
+      <section className="bento" aria-label="Character stats">
+        <div className="tile">
+          <span className="tile-label">Level</span>
+          <span className="tile-figure num">
+            <AnimatedNum value={baseLevel} />
+          </span>
+          <span className="tile-note">Across {jobs.length} disciplines</span>
+        </div>
+
+        <div className="tile">
+          <span className="tile-label">Experience</span>
+          <span className="tile-figure num">
+            <AnimatedNum value={xpPct} />
+            <span className="unit">%</span>
+          </span>
+          <AnimatedBar pct={xpPct} trackClass="xp-track" fillClass="xp-fill" />
+          <span className="tile-note num">
+            {totalXp} / {maxXp} XP
+          </span>
+        </div>
+
+        <div className="tile">
+          <span className="tile-label">Streak</span>
+          <span className="tile-figure num">
+            <AnimatedNum value={streak} />
+            <span className="unit">days</span>
+          </span>
+          <span className="tile-note">Consecutive active days</span>
+        </div>
+
+        <div className={"tile" + (cycle.bossPrep ? " boss" : "")}>
+          <span className="tile-label">Exam Cycle {cycle.cycleNumber}</span>
+          <span className="tile-figure">
+            {cycle.week}
+            <span className="unit">of {cycle.lengthWeeks}</span>
+          </span>
+          <div className="cycle-pips" aria-hidden="true">
+            {pips.map((p, i) => (
+              <span key={i} className={"pip" + (p ? ` ${p}` : "")} />
+            ))}
+          </div>
+          <span className="tile-note">
+            {cycle.bossPrep ? (
+              <strong>Boss Prep active</strong>
+            ) : (
+              <>
+                Boss Prep in <strong>{cycle.daysUntilBossPrep} days</strong>
+              </>
+            )}
+          </span>
+        </div>
+      </section>
+
+      <SkillInventory concepts={concepts} />
     </div>
   );
 }
