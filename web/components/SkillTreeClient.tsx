@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import type { Concept } from "@/lib/vault";
 
-const TIER_X = 150;
+const TIER_X = 212;
 const ROW_Y = 110;
 const NODE_W = 172;
 const NODE_H = 58;
@@ -85,11 +85,23 @@ export default function SkillTreeClient({
     [nodes]
   );
 
-  const edges: { from: Positioned; to: Positioned; toLocked: boolean }[] = [];
+  const edges: {
+    from: Positioned;
+    to: Positioned;
+    toLocked: boolean;
+    charged: boolean;
+  }[] = [];
   for (const node of nodes) {
     for (const prereqName of node.prerequisites) {
       const from = byName.get(prereqName);
-      if (from) edges.push({ from, to: node, toLocked: node.locked });
+      if (from) {
+        edges.push({
+          from,
+          to: node,
+          toLocked: node.locked,
+          charged: !node.locked && from.status === "mastered",
+        });
+      }
     }
   }
 
@@ -130,7 +142,9 @@ export default function SkillTreeClient({
                   y1={e.from.y + NODE_H / 2}
                   x2={e.to.x + NODE_W / 2}
                   y2={e.to.y + NODE_H / 2}
-                  className={e.toLocked ? "to-locked" : ""}
+                  className={
+                    e.toLocked ? "to-locked" : e.charged ? "to-charged" : ""
+                  }
                 />
               ))}
             </svg>

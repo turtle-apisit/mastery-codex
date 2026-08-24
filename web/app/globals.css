@@ -387,7 +387,19 @@ button{font-family:inherit;}
   box-shadow:0 0 18px rgba(79,214,240,.04);
   padding:13px 15px 15px;
 }
-.job-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;}
+.job-head{display:flex;align-items:flex-start;gap:11px;}
+.job-emblem{
+  flex:none;width:34px;height:34px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;color:var(--accent);
+  border:1px solid var(--border-strong);
+  background:var(--surface-2);
+}
+.job-id{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;}
+.job-class{
+  font-family:var(--font-mono);font-size:9.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--text-faint);
+}
 .job-name{font-size:14px;font-weight:600;}
 .job-lv{font-family:var(--font-display);font-size:15px;color:var(--accent);}
 .job-lv span{font-size:10px;color:var(--text-faint);margin-right:4px;}
@@ -408,22 +420,65 @@ button{font-family:inherit;}
 .tag.locked{color:var(--locked);border-color:var(--locked);background:var(--locked-soft);}
 .tag.rusty{color:var(--rusty);border-color:var(--rusty);}
 
-/* ---------- quests ---------- */
+/* ---------- quests (hunter board) ---------- */
+.quest-board-head{
+  display:flex;align-items:baseline;justify-content:space-between;
+  gap:12px;margin-bottom:12px;
+  padding-bottom:8px;border-bottom:1px solid var(--border);
+}
+.quest-board-count{font-family:var(--font-mono);font-size:11px;color:var(--text-faint);}
 .quests{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
 .quest{
-  background:var(--surface);
+  position:relative;
+  background:linear-gradient(160deg,var(--surface-2),var(--surface));
   border:1px solid var(--border-strong);
   box-shadow:0 0 18px rgba(79,214,240,.04);
-  padding:13px 15px;
+  padding:14px 16px 12px;
   display:flex;
   flex-direction:column;
   gap:7px;
+  transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease;
 }
-.quest-top{display:flex;justify-content:space-between;gap:10px;}
-.quest-subject{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-faint);}
+.quest:hover{
+  transform:translateY(-3px);
+  border-color:var(--accent);
+  box-shadow:0 0 0 1px rgba(79,214,240,.25),0 8px 26px rgba(2,7,11,.5);
+}
+.quest-rank{
+  position:absolute;top:0;right:0;
+  width:30px;height:30px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-size:15px;font-weight:700;
+  border-left:1px solid var(--border-strong);
+  border-bottom:1px solid var(--border-strong);
+  color:var(--text-faint);
+}
+.quest-rank.rS{color:var(--accent);background:var(--accent-soft);border-color:var(--accent);}
+.quest-rank.rA{color:var(--accent);}
+.quest-rank.rB{color:var(--training);}
+.quest-urgent{
+  position:absolute;top:0;left:0;
+  font-family:var(--font-mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  padding:3px 8px;
+  color:var(--untrained);background:var(--untrained-soft);
+  border-right:1px solid var(--untrained);
+  border-bottom:1px solid var(--untrained);
+}
+.quest-top{display:flex;justify-content:space-between;gap:10px;padding-right:34px;}
+.quest.has-urgent .quest-top{padding-top:14px;}
+.quest-subject{
+  display:flex;align-items:center;gap:6px;
+  font-family:var(--font-mono);font-size:10.5px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--text-faint);
+}
+.quest-glyph{color:var(--accent);font-size:12px;line-height:1;margin-right:2px;}
 .quest-reward{font-family:var(--font-mono);font-size:12px;color:var(--accent);white-space:nowrap;}
-.quest-title{font-size:14px;font-weight:500;}
+.quest-title{font-size:14.5px;font-weight:500;line-height:1.35;}
 .quest-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px;}
+.quest-foot{
+  margin-top:4px;padding-top:9px;border-top:1px solid var(--border);
+  display:flex;justify-content:flex-end;
+}
 
 /* ---------- skill tree ---------- */
 .subject-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;}
@@ -441,6 +496,13 @@ button{font-family:inherit;}
 .tree-canvas svg{position:absolute;inset:0;width:100%;height:100%;}
 .tree-canvas svg line{stroke:var(--border-strong);stroke-width:1.5;}
 .tree-canvas svg line.to-locked{stroke-dasharray:3 4;}
+/* prereq is mastered — draw power flowing down the branch */
+.tree-canvas svg line.to-charged{
+  stroke:var(--mastered);stroke-width:2;
+  stroke-dasharray:7 5;
+  animation:edgeCharge 1.6s linear infinite;
+}
+@keyframes edgeCharge{ to{stroke-dashoffset:-24;} }
 
 .node{
   position:absolute;
@@ -464,7 +526,29 @@ button{font-family:inherit;}
 .node .n-meta{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);display:flex;align-items:center;gap:6px;}
 .node .n-meta .dot{width:7px;height:7px;}
 
-.node.mastered{border-color:var(--mastered);}
+.node.mastered{
+  border-color:var(--mastered);
+  box-shadow:0 0 14px rgba(79,216,138,.14);
+}
+.node.mastered::after{
+  content:"";position:absolute;inset:-3px;
+  border:1px solid var(--mastered);
+  opacity:0;pointer-events:none;
+  animation:nodePulse 3.4s ease-out infinite;
+}
+@keyframes nodePulse{
+  0%{opacity:.5;transform:scale(1);}
+  35%,100%{opacity:0;transform:scale(1.06);}
+}
+.node.locked::after{
+  content:"";position:absolute;inset:0;
+  pointer-events:none;
+  background:repeating-linear-gradient(
+    135deg,
+    rgba(61,88,102,.14) 0 2px,
+    transparent 2px 5px
+  );
+}
 .node.training{border-color:var(--training);}
 .node.untrained{border-color:var(--untrained);}
 .node.locked{border-color:var(--border);background:var(--surface);color:var(--text-faint);cursor:default;}
@@ -513,6 +597,9 @@ button{font-family:inherit;}
   .cast-hero{animation:none;}
   .bar-eased{transition:none;}
   .bar-shine{animation:none;opacity:0;}
+  .node.mastered::after{animation:none;opacity:0;}
+  .tree-canvas svg line.to-charged{animation:none;}
+  .quest{transition:none;}
   ::view-transition-old(*),::view-transition-new(*),::view-transition-group(*){
     animation-duration:0s !important;animation-delay:0s !important;
   }
@@ -596,6 +683,13 @@ button{font-family:inherit;}
   position:absolute;bottom:26px;
   font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;
   text-transform:uppercase;color:var(--text-faint);
+}
+
+/* ---------- reticle cursor ----------
+   Scoped to interactive HUD surfaces only — a sitewide custom cursor costs
+   more in usability than it returns in theme. */
+.tab,.node:not(.locked),.cast-chip,.cast-tab,.filter-btn,.quest,.cast-contract-toggle{
+  cursor:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><g fill='none' stroke='%234fd6f0' stroke-width='2'><path d='M2 8V2h6'/><path d='M22 8V2h-6'/><path d='M2 16v6h6'/><path d='M22 16v6h-6'/></g><circle cx='12' cy='12' r='1.5' fill='%234fd6f0'/></svg>") 12 12, pointer;
 }
 
 /* ---------- animated bars ---------- */
