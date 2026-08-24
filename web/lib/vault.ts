@@ -147,12 +147,17 @@ export function getJobSummaries(): JobSummary[] {
       untrained = 0,
       locked = 0,
       rusty = 0;
+    // status is one of three buckets; rusty and locked are flags layered on
+    // top, so a Training-and-rusty concept counts in BOTH training and rusty.
+    // These figures deliberately sum to more than `total` — they measure two
+    // different axes, and collapsing them into one bucket made the training
+    // count silently exclude exactly the concepts most in need of work.
     for (const c of concepts) {
-      if (c.locked) locked++;
-      else if (c.rusty) rusty++;
-      else if (c.status === "mastered") mastered++;
+      if (c.status === "mastered") mastered++;
       else if (c.status === "training") training++;
       else untrained++;
+      if (c.locked) locked++;
+      if (c.rusty) rusty++;
     }
 
     return {

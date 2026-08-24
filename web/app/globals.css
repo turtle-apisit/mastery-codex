@@ -446,7 +446,7 @@ button{font-family:inherit;}
     box-shadow:var(--e-2);
   }
   .inv-head{
-    display:flex;justify-content:space-between;align-items:baseline;
+    display:flex;justify-content:space-between;align-items:center;
     flex-wrap:wrap;gap:var(--sp-3);margin-bottom:var(--sp-4);
   }
   .inv-head h2{
@@ -463,36 +463,136 @@ button{font-family:inherit;}
     border-radius:var(--r-pill);
     background:var(--accent-soft);
   }
-  .stat-row{display:flex;flex-wrap:wrap;gap:var(--sp-2);}
 
-  .filter-row{display:flex;flex-wrap:wrap;gap:var(--sp-2);margin:0 0 var(--sp-5);}
+  /* graph / list switch */
+  .view-toggle{
+    display:flex;gap:2px;padding:2px;
+    border:1px solid var(--border-strong);border-radius:var(--r-pill);
+  }
+  .view-btn{
+    font-family:var(--font-mono);font-size:var(--step--1);
+    letter-spacing:.08em;text-transform:uppercase;
+    color:var(--text-muted);background:transparent;border:0;
+    border-radius:var(--r-pill);padding:var(--sp-2) var(--sp-4);
+    cursor:pointer;transition:color .15s ease,background .15s ease;
+  }
+  .view-btn:hover{color:var(--text);}
+  .view-btn.active{color:var(--ground);background:var(--accent);}
+
+  /* One row carrying its own counts. The old build had a tag row and a filter
+     row saying the same thing twice, one of them clickable. */
+  .filter-row{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2);margin:0 0 var(--sp-3);}
+  .filter-sep{width:1px;align-self:stretch;margin:0 var(--sp-2);background:var(--border-strong);}
   .filter-btn{
+    display:inline-flex;align-items:center;gap:var(--sp-2);
     font-family:var(--font-mono);font-size:var(--step--1);
     letter-spacing:.06em;text-transform:uppercase;
     color:var(--text-muted);
     background:transparent;
     border:1px solid var(--border-strong);
     border-radius:var(--r-pill);
-    padding:var(--sp-2) var(--sp-4);
+    padding:var(--sp-2) var(--sp-3) var(--sp-2) var(--sp-4);
     cursor:pointer;
     transition:color .15s ease,border-color .15s ease,background .15s ease;
   }
+  /* dashed = a flag, not a bucket */
+  .filter-btn.flag{border-style:dashed;}
+  .filter-btn .filter-n{
+    padding:0 var(--sp-2);border-radius:var(--r-pill);
+    background:color-mix(in oklch, var(--surface-3) 80%, transparent);
+    color:var(--text);font-size:11px;
+  }
   .filter-btn:hover{color:var(--text);border-color:var(--glass-border);}
-  .filter-btn.active{
-    color:var(--ground);
-    border-color:var(--accent);
-    background:var(--accent);
-  }
+  .filter-btn.active{color:var(--ground);border-color:var(--accent);background:var(--accent);border-style:solid;}
+  .filter-btn.active .filter-n{background:color-mix(in oklch, var(--ground) 22%, transparent);color:var(--ground);}
+  .filter-btn.active .dot{background:var(--ground);border-color:var(--ground);}
 
-  .inv-groups{display:flex;flex-direction:column;gap:var(--sp-5);}
-  .inv-group-name{
-    font-family:var(--font-mono);font-size:var(--step--1);
-    letter-spacing:.12em;text-transform:uppercase;
-    color:var(--text-faint);
-    margin-bottom:var(--sp-3);
+  .filter-note{
+    margin:0 0 var(--sp-5);
+    font-size:var(--step--1);color:var(--text-faint);
   }
-  /* reflows against the panel, not the viewport */
-  .inv-grid{display:grid;grid-template-columns:1fr;gap:var(--sp-2);}
+  .filter-note strong{color:var(--text-muted);font-weight:600;}
+
+  /* subject = one card, not a bare text label */
+  .inv-groups{display:flex;flex-direction:column;gap:var(--sp-4);}
+  .subject-card{
+    border:1px solid var(--border);
+    background:color-mix(in oklch, var(--surface) 55%, transparent);
+    overflow:hidden;
+  }
+  .subject-head{
+    display:flex;align-items:center;gap:var(--sp-3);width:100%;
+    padding:var(--sp-3) var(--sp-4);
+    background:transparent;border:0;border-bottom:1px solid var(--border);
+    cursor:pointer;text-align:left;
+    transition:background .15s ease;
+  }
+  .subject-head:hover{background:color-mix(in oklch, var(--surface-2) 60%, transparent);}
+  .subject-name{
+    flex:1;
+    font-family:var(--font-mono);font-size:var(--step--1);
+    letter-spacing:.12em;text-transform:uppercase;color:var(--text);
+  }
+  .subject-meta{font-family:var(--font-mono);font-size:var(--step--1);color:var(--text-faint);}
+  .chev{
+    width:0;height:0;flex:none;
+    border-left:5px solid var(--text-faint);
+    border-top:4px solid transparent;border-bottom:4px solid transparent;
+    transform:rotate(90deg);transition:transform .15s ease;
+  }
+  .chev.closed{transform:rotate(0deg);}
+
+  /* wide graphs scroll inside the card; the page body never scrolls sideways */
+  .graph-scroll{overflow-x:auto;padding:var(--sp-2) 0;}
+  .skill-graph{display:block;}
+
+  .edge{
+    fill:none;
+    stroke:var(--border-strong);
+    stroke-width:1.25;
+    color:var(--border-strong);
+    transition:stroke .15s ease,opacity .15s ease;
+    opacity:.55;
+  }
+  .edge.lit{stroke:var(--accent);color:var(--accent);opacity:1;stroke-width:1.75;}
+
+  .gnode{cursor:pointer;}
+  .gnode:focus{outline:none;}
+  .gnode:focus-visible .gnode-box{stroke:var(--accent);stroke-width:2;}
+  .gnode-box{
+    fill:var(--surface-2);
+    stroke:var(--border-strong);
+    stroke-width:1;
+    transition:fill .15s ease,stroke .15s ease;
+  }
+  .gnode-stripe{fill:var(--border-strong);transition:fill .15s ease;}
+  .gnode-label{
+    fill:var(--text);
+    font-family:var(--font-body);
+    font-size:10.5px;
+    transition:fill .15s ease;
+  }
+  .gnode-flag{font-size:10px;text-anchor:end;}
+  .gnode-flag.lock{fill:var(--locked);}
+  .gnode-flag.rust{fill:var(--rusty);}
+
+  .gnode.mastered .gnode-stripe{fill:var(--mastered);}
+  .gnode.training .gnode-stripe{fill:var(--training);}
+  .gnode.untrained .gnode-stripe{fill:var(--untrained);}
+  /* Locked and rusty are flags laid over the status, not replacements for it.
+     The stripe keeps reporting where the skill stands, the hollow box reports
+     that it is gated, the dashed outline reports that it has decayed. */
+  .gnode.locked .gnode-box{fill:transparent;stroke-dasharray:3 3;}
+  .gnode.locked .gnode-label{fill:var(--text-faint);}
+  .gnode.rusty .gnode-box{stroke:var(--rusty);}
+
+  .gnode:hover .gnode-box{stroke:var(--accent);}
+  .gnode.selected .gnode-box{stroke:var(--accent);stroke-width:2;fill:var(--surface-3);}
+  .gnode.dim{opacity:.22;}
+  .gnode.lit{opacity:1;}
+
+  /* list view */
+  .inv-grid{display:grid;grid-template-columns:1fr;gap:var(--sp-2);padding:var(--sp-4);}
   @container (min-width:420px){
     .inv-grid{grid-template-columns:repeat(2,1fr);}
   }
@@ -513,19 +613,21 @@ button{font-family:inherit;}
     transition:border-color .15s ease,background .15s ease,transform .15s ease;
   }
   .inv-chip:hover{transform:translateY(-2px);}
+  .chip-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .chip-flags{display:inline-flex;gap:var(--sp-1);flex:none;}
+  .chip-flags i{font-style:normal;font-size:11px;}
+  .chip-flags .rust{color:var(--rusty);}
+  .chip-flags .lock{color:var(--locked);}
   .inv-chip em{
-    font-style:normal;margin-left:auto;
+    font-style:normal;margin-left:auto;flex:none;
     font-family:var(--font-mono);font-size:var(--step--1);color:var(--text-muted);
   }
   .inv-chip.mastered{border-left-color:var(--mastered);}
   .inv-chip.training{border-left-color:var(--training);}
   .inv-chip.untrained{border-left-color:var(--untrained);}
-  .inv-chip.locked{
-    border-color:var(--border);border-left-color:var(--border);
-    color:var(--text-faint);background:transparent;
-  }
+  .inv-chip.locked{border-color:var(--border);color:var(--text-faint);background:transparent;}
   .inv-chip.locked em{color:var(--text-faint);}
-  .inv-chip.rusty{border-left-color:var(--rusty);outline:1px dashed var(--rusty);outline-offset:2px;}
+  .inv-chip.rusty{border-color:var(--rusty);border-style:dashed;border-left-style:solid;}
 }
 
 /* ---------- panel base ---------- */
@@ -879,5 +981,6 @@ button{font-family:inherit;}
   .bar-eased{transition:none;}
   .bar-shine{animation:none;opacity:0;}
   .tile,.inv-chip,.cast-chip{transition:none;}
+  .edge,.gnode,.gnode-box,.gnode-stripe,.gnode-label,.chev{transition:none;}
   .tile:hover,.inv-chip:hover,.cast-chip:hover{transform:none;}
 }
