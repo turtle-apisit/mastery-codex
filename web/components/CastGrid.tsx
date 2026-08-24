@@ -5,6 +5,7 @@ import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { Agent, AgentTier } from "@/lib/vault";
+import { BIOS, bioTeaser } from "@/lib/bios";
 
 const TIER_ORDER: { tier: AgentTier; label: string; desc: string }[] = [
   { tier: "Party", label: "Party", desc: "companions who work with your material every day" },
@@ -17,8 +18,9 @@ function artPath(agent: Agent): string {
   return `/art/${folder}/${agent.slug}.png`;
 }
 
-function shortDesc(description: string): string {
-  return description.split(". Use ")[0] + ".";
+/** "Scribe (Party). Reads a newly..." -> "Scribe" */
+function roleTitle(description: string): string {
+  return description.split(" (")[0];
 }
 
 export default function CastGrid({ agents }: { agents: Agent[] }) {
@@ -56,8 +58,8 @@ export default function CastGrid({ agents }: { agents: Agent[] }) {
                     <Image src={artPath(agent)} alt={`${agent.name} portrait`} fill style={{ objectFit: "contain" }} />
                   </div>
                   <div className="cast-name">{agent.name}</div>
-                  <div className="cast-role">{tier === "Party" ? agent.name : label}</div>
-                  <div className="cast-desc">{shortDesc(agent.description)}</div>
+                  <div className="cast-role">{roleTitle(agent.description)}</div>
+                  <div className="cast-desc">{bioTeaser(agent.slug)}</div>
                 </button>
               ))}
             </div>
@@ -73,7 +75,9 @@ export default function CastGrid({ agents }: { agents: Agent[] }) {
               <span className="cast-detail-name">{selected.name}</span>
               <span className="cast-detail-tier">{selected.tier}</span>
             </div>
-            <div className="cast-detail-role">{shortDesc(selected.description)}</div>
+            <div className="cast-detail-role">{roleTitle(selected.description)}</div>
+            <p className="cast-detail-bio">{BIOS[selected.slug]}</p>
+            <div className="cast-detail-spec-label">Full capability sheet</div>
             <div className="cast-detail-section markdown-body">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{selected.body}</ReactMarkdown>
             </div>
