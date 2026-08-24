@@ -1,0 +1,38 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+const TABS = [
+  { href: "/", label: "Character" },
+  { href: "/cast", label: "Cast" },
+  { href: "/jobs", label: "Jobs" },
+  { href: "/quests", label: "Quests" },
+  { href: "/skill-tree", label: "Skill Tree" },
+  { href: "/log", label: "Log" },
+];
+
+export default function TopNav() {
+  const pathname = usePathname();
+
+  return (
+    <nav className="topnav">
+      <div className="topnav-inner">
+        <Link href="/" className="brand">
+          MASTERY <em>CODEX</em>
+        </Link>
+        <div className="tabs">
+          {TABS.map((tab) => (
+            <Link
+              key={tab.href}
+              href={tab.href}
+              className={"tab" + (pathname === tab.href ? " active" : "")}
+            >
+              {tab.label}
+            </Link>
+          ))}
+        </div>
+      </div>
+    </nav>
+  );
+}
