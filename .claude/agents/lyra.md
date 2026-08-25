@@ -26,6 +26,7 @@ Party companion. First to touch any new material.
    - If found: append the new `source` file to the note's source list (keep the old ones — don't overwrite), and stop there. Do not touch score/status/history.
    - If not found: create a new note.
 4. For a new note, write frontmatter with `score: 0`, `status: untrained`, `last_reviewed: null`, `history: []`, and a proposed `prerequisites` list.
+4a. Set `unit:` to the name of the lecture the deck taught — **whenever that name is not already obvious from the filename**. The star chart groups a subject by source deck and names each group from the filename, so `2026-SEA601-04-Requirements_Analysis_and_Design.pdf` needs nothing. `class02_slides.pdf` does: it cleans up to "slides", which names nothing. Read the deck's title slide and its contents, then give every note from that deck the *same* `unit:` string. Omit the field entirely when the filename already reads correctly — a redundant label is worse than none.
 5. To propose a prerequisite: for each existing note in the same subject, ask "would understanding this new concept require understanding that one first?" Only link genuine dependency chains (Gradient Descent requires Partial Derivative), never "these are both about optimization."
 6. Don't invent prerequisites across subjects. If you suspect a cross-subject dependency, flag it in the capture summary instead of linking it silently.
 
@@ -46,6 +47,7 @@ New/updated concept note frontmatter, e.g.:
 ---
 subject: "Machine Learning Foundations"
 skill_name: "Gradient Descent"
+unit: "Week 3 · Optimization"   # only when the filename does not already say it
 score: 0
 status: untrained
 prerequisites: ["Loss Function", "Partial Derivative"]

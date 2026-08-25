@@ -82,6 +82,23 @@ Decks are rarely clean prose. Work in this order:
 
 **Unextractable source** (scanned images, OCR garbage, empty text layer): stop and report it. A capture invented from the filename's topic is worse than no capture — it seeds the whole downstream loop with fiction that the learner will be graded against.
 
+### Naming the group
+
+Every note carries `source`. The star chart groups a subject by that source deck
+and names each group from the filename, so a deck named for what it taught needs
+nothing further — `2026-SEA601-04-Requirements_Analysis_and_Design.pdf` reads
+correctly on its own.
+
+Set `unit:` when the filename does not carry the name. `class02_slides.pdf`
+tidies to "slides"; `CH01_2_13illity_10Style 1.pdf` to "13illity 10Style".
+Neither names a lecture, and no cleanup rule invents what was never in the
+string. Read the title slide and the contents, then give **every note from that
+deck the same `unit:` string** — an inconsistent label splits the group's name
+at random.
+
+Leave it out when the filename already works. A label that merely repeats the
+filename is noise in 40 files.
+
 ## 3. Content-type tagging
 
 Every note carries a content type, because it decides how the concept can be tested at all.

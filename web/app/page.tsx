@@ -16,7 +16,11 @@ export default function CharacterPage() {
   const maxXp = unlocked.length * 100;
   const xpPct = maxXp ? Math.round((totalXp / maxXp) * 100) : 0;
   const baseLevel = jobs.reduce((s, j) => s + j.level, 0);
-  const strongest = [...jobs].sort((a, b) => b.level - a.level)[0];
+  // Only a real lead counts. With every discipline tied at level 0 the sort
+  // still returns a winner, and the hero would claim a strongest subject before
+  // a single exercise had been graded.
+  const ranked = [...jobs].sort((a, b) => b.level - a.level);
+  const strongest = ranked[0]?.level > 0 ? ranked[0] : null;
 
   const pips = Array.from({ length: cycle.lengthWeeks }, (_, i) => {
     const weekNum = i + 1;
@@ -44,7 +48,7 @@ export default function CharacterPage() {
           <div className="hero-eyebrow">Mastery Codex // Status Window</div>
           <h1 className="hero-name">AI Engineering Apprentice</h1>
           <div className="hero-meta">
-            <span>Strongest in {strongest?.subject ?? "—"}</span>
+            <span>{strongest ? `Strongest in ${strongest.subject}` : "No discipline trained yet"}</span>
             <span className="streak">{streak}-day streak</span>
           </div>
         </div>
