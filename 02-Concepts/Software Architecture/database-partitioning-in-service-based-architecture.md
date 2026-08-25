@@ -1,5 +1,6 @@
 ---
 subject: Software Architecture
+unit: Architecture Styles
 skill_name: Database Partitioning in Service-Based Architecture
 score: 0
 prerequisites:

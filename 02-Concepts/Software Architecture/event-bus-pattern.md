@@ -1,5 +1,6 @@
 ---
 subject: Software Architecture
+unit: Quality Attributes and Classic Patterns
 skill_name: Event-Bus Pattern
 score: 0
 prerequisites:

@@ -23,6 +23,8 @@ export type Concept = {
   score: number;
   prerequisites: string[];
   source: string[];
+  /** optional display name for the lecture group this note belongs to */
+  unit: string | null;
   last_reviewed: string | null;
   history: HistoryEntry[];
   // derived
@@ -77,6 +79,7 @@ function readConceptFile(filePath: string): Omit<
     score: data.score ?? 0,
     prerequisites: data.prerequisites ?? [],
     source: data.source ?? [],
+    unit: data.unit ?? null,
     last_reviewed: data.last_reviewed ?? null,
     history: data.history ?? [],
   };

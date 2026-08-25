@@ -1,5 +1,6 @@
 ---
 subject: Software Architecture
+unit: Architecture Styles
 skill_name: Fallacies of Distributed Computing
 score: 0
 prerequisites:

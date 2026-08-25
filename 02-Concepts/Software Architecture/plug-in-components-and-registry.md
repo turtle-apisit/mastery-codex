@@ -1,5 +1,6 @@
 ---
 subject: Software Architecture
+unit: Architecture Styles
 skill_name: Plug-in Components and Registry
 score: 0
 prerequisites:
