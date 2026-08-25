@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 const TABS = [
   { href: "/", label: "Navigation" },
   { href: "/observatory", label: "Observatory" },
+  { href: "/simulation", label: "Simulation" },
+  { href: "/final-approach", label: "Final Approach" },
 ];
 
 export default function TopNav() {
