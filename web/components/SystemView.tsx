@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { Concept } from "@/lib/vault";
 
 /**
@@ -14,8 +14,13 @@ import type { Concept } from "@/lib/vault";
  *
  * The motion is Obsidian's graph view: every body is under a small force
  * simulation, so it drifts, can be dragged, shoves its neighbours out of the
- * way and springs back to its orbit when released. Nothing here is a canned
- * keyframe animation.
+ * way and springs back to its orbit when released.
+ *
+ * That simulation does NOT run through React. Positions live in a ref and the
+ * loop writes each transform straight to its element. Routing 60 frames a
+ * second through setState re-rendered ~180 SVG nodes per frame, and the CSS
+ * transition on the parallax layers restarted its interpolation every 16ms on
+ * top of that — between them, that was the stutter.
  *
  * Laid out in real host pixels rather than a fixed viewBox, so labels stay at a
  * true readable size on a phone instead of scaling down with the artwork.
@@ -46,13 +51,17 @@ type Body = {
   spread: number;
 };
 
-// Simulation constants. Tuned for "calm orrery", not "bouncy toy": a light
-// spring, heavy damping, and a revolution slow enough to read as drift.
+// Tuned for "calm orrery", not "bouncy toy": a light spring, heavy damping, and
+// a revolution slow enough to read as drift.
 const SPRING = 0.014;
 const DAMPING = 0.9;
 const REPEL = 0.55;
 const REVOLVE_DEG_PER_SEC = 0.9;
-const SETTLE = 0.02; // below this speed the body is treated as at rest
+const SETTLE = 0.02;
+/** how far each parallax layer lags the pointer */
+const LAYER_DEPTH = { graticule: 6, core: -3, planets: 14 };
+/** parallax easing per frame — the smoothing the CSS transition used to do */
+const TILT_EASE = 0.12;
 
 function tally(list: Concept[]): Counts {
   const c: Counts = {
@@ -123,10 +132,17 @@ export default function SystemView({
   // server and the chart would be missing from the prerendered HTML.
   const [size, setSize] = useState({ w: 1000, h: 560 });
   const [hover, setHover] = useState<string | null>(null);
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
-  const [bodies, setBodies] = useState<Body[]>([]);
   const [dragging, setDragging] = useState<string | null>(null);
 
+  // Everything the animation touches lives outside React.
+  const bodiesRef = useRef<Body[]>([]);
+  const nodeRefs = useRef(new Map<string, SVGGElement | null>());
+  const layerRefs = useRef({
+    graticule: null as SVGGElement | null,
+    core: null as SVGGElement | null,
+    planets: null as SVGGElement | null,
+  });
+  const tilt = useRef({ x: 0, y: 0, tx: 0, ty: 0 });
   const dragRef = useRef<{ subject: string; moved: boolean } | null>(null);
   const pointerRef = useRef({ x: 0, y: 0 });
 
@@ -167,7 +183,6 @@ export default function SystemView({
     }));
   }, [subjects, narrow]);
 
-  /** Where a body belongs right now, given its orbit slot. */
   const homeOf = useCallback(
     (angle: number, spread: number) => {
       const p = polar(1, angle);
@@ -175,6 +190,43 @@ export default function SystemView({
     },
     [cx, cy, rx, ry]
   );
+
+  // Seed or reconcile bodies whenever the cast of subjects changes.
+  useLayoutEffect(() => {
+    const byName = new Map(bodiesRef.current.map((b) => [b.subject, b]));
+    bodiesRef.current = specs.map((s) => {
+      const hit = byName.get(s.subject);
+      if (hit) return hit;
+      const home = homeOf(s.baseAngle, s.spread);
+      return {
+        subject: s.subject,
+        x: home.x,
+        y: home.y,
+        vx: 0,
+        vy: 0,
+        angle: s.baseAngle,
+        spread: s.spread,
+      };
+    });
+  }, [specs, homeOf]);
+
+  /** Write current positions onto the DOM. Also runs after every React commit,
+   *  since a re-render resets the transforms back to their JSX values. */
+  const paint = useCallback(() => {
+    for (const b of bodiesRef.current) {
+      const el = nodeRefs.current.get(b.subject);
+      if (el) el.setAttribute("transform", `translate(${b.x.toFixed(2)} ${b.y.toFixed(2)})`);
+    }
+    const t = tilt.current;
+    const set = (el: SVGGElement | null, d: number) => {
+      if (el) el.style.transform = `translate(${(t.x * d).toFixed(2)}px, ${(t.y * d).toFixed(2)}px)`;
+    };
+    set(layerRefs.current.graticule, LAYER_DEPTH.graticule);
+    set(layerRefs.current.core, LAYER_DEPTH.core);
+    set(layerRefs.current.planets, LAYER_DEPTH.planets);
+  }, []);
+
+  useLayoutEffect(paint);
 
   const reduced =
     typeof window !== "undefined" &&
@@ -184,96 +236,80 @@ export default function SystemView({
     if (!specs.length) return;
     let raf = 0;
     let last = performance.now();
+    const specByName = new Map(specs.map((s) => [s.subject, s]));
 
     const step = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
+      const bodies = bodiesRef.current;
 
-      setBodies((prev) => {
-        const specByName = new Map(specs.map((s) => [s.subject, s]));
-        const byName = new Map(prev.map((b) => [b.subject, b]));
-        // Reconciled here rather than in an effect of its own: a body that has
-        // never been simulated starts parked in its orbit slot, and one that
-        // already exists keeps its momentum through a resize.
-        const next: Body[] = specs.map((s) => {
-          const hit = byName.get(s.subject);
-          if (hit) return { ...hit };
-          const home = homeOf(s.baseAngle, s.spread);
-          return {
-            subject: s.subject,
-            x: home.x,
-            y: home.y,
-            vx: 0,
-            vy: 0,
-            angle: s.baseAngle,
-            spread: s.spread,
-          };
-        });
+      for (const b of bodies) {
+        const spec = specByName.get(b.subject);
+        if (!spec) continue;
 
-        for (const b of next) {
-          const spec = specByName.get(b.subject);
-          if (!spec) continue;
+        if (!reduced) b.angle += REVOLVE_DEG_PER_SEC * dt;
 
-          if (!reduced) b.angle += REVOLVE_DEG_PER_SEC * dt;
-
-          if (dragRef.current?.subject === b.subject) {
-            b.x = pointerRef.current.x;
-            b.y = pointerRef.current.y;
-            b.vx = 0;
-            b.vy = 0;
-            continue;
-          }
-
-          // tether to the orbit slot
-          const p = polar(1, b.angle);
-          const hx = cx + rx * b.spread * p.x;
-          const hy = cy + ry * b.spread * p.y;
-          b.vx += (hx - b.x) * SPRING;
-          b.vy += (hy - b.y) * SPRING;
-
-          // shove neighbours apart, including room for their labels
-          for (const o of next) {
-            if (o.subject === b.subject) continue;
-            const os = specByName.get(o.subject);
-            if (!os) continue;
-            const dx = b.x - o.x;
-            const dy = b.y - o.y;
-            const d = Math.hypot(dx, dy) || 0.001;
-            const min = spec.r + os.r + (narrow ? 74 : 104);
-            if (d < min) {
-              const push = ((min - d) / min) * REPEL;
-              b.vx += (dx / d) * push * 10;
-              b.vy += (dy / d) * push * 10;
-            }
-          }
-
-          // keep clear of the core so nothing sits on the portrait
-          const dcx = b.x - cx;
-          const dcy = b.y - cy;
-          const dc = Math.hypot(dcx, dcy) || 0.001;
-          const keep = coreR * 1.5 + spec.r;
-          if (dc < keep) {
-            const push = ((keep - dc) / keep) * REPEL * 12;
-            b.vx += (dcx / dc) * push;
-            b.vy += (dcy / dc) * push;
-          }
-
-          b.vx *= DAMPING;
-          b.vy *= DAMPING;
-          if (Math.abs(b.vx) < SETTLE) b.vx = 0;
-          if (Math.abs(b.vy) < SETTLE) b.vy = 0;
-          b.x += b.vx;
-          b.y += b.vy;
+        if (dragRef.current?.subject === b.subject) {
+          b.x = pointerRef.current.x;
+          b.y = pointerRef.current.y;
+          b.vx = 0;
+          b.vy = 0;
+          continue;
         }
-        return next;
-      });
 
+        // tether to the orbit slot
+        const p = polar(1, b.angle);
+        b.vx += (cx + rx * b.spread * p.x - b.x) * SPRING;
+        b.vy += (cy + ry * b.spread * p.y - b.y) * SPRING;
+
+        // shove neighbours apart, including room for their labels
+        for (const o of bodies) {
+          if (o.subject === b.subject) continue;
+          const os = specByName.get(o.subject);
+          if (!os) continue;
+          const dx = b.x - o.x;
+          const dy = b.y - o.y;
+          const d = Math.hypot(dx, dy) || 0.001;
+          const min = spec.r + os.r + (narrow ? 74 : 104);
+          if (d < min) {
+            const push = ((min - d) / min) * REPEL * 10;
+            b.vx += (dx / d) * push;
+            b.vy += (dy / d) * push;
+          }
+        }
+
+        // keep clear of the core so nothing sits on the portrait
+        const dcx = b.x - cx;
+        const dcy = b.y - cy;
+        const dc = Math.hypot(dcx, dcy) || 0.001;
+        const keep = coreR * 1.5 + spec.r;
+        if (dc < keep) {
+          const push = ((keep - dc) / keep) * REPEL * 12;
+          b.vx += (dcx / dc) * push;
+          b.vy += (dcy / dc) * push;
+        }
+
+        b.vx *= DAMPING;
+        b.vy *= DAMPING;
+        if (Math.abs(b.vx) < SETTLE) b.vx = 0;
+        if (Math.abs(b.vy) < SETTLE) b.vy = 0;
+        b.x += b.vx;
+        b.y += b.vy;
+      }
+
+      // ease the parallax here instead of with a CSS transition, which was
+      // being restarted every frame and never got to finish
+      const t = tilt.current;
+      t.x += (t.tx - t.x) * TILT_EASE;
+      t.y += (t.ty - t.y) * TILT_EASE;
+
+      paint();
       raf = requestAnimationFrame(step);
     };
 
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
-  }, [specs, cx, cy, rx, ry, coreR, narrow, reduced, homeOf]);
+  }, [specs, cx, cy, rx, ry, coreR, narrow, reduced, paint]);
 
   function stagePoint(e: React.PointerEvent) {
     const el = hostRef.current;
@@ -289,7 +325,9 @@ export default function SystemView({
       dragRef.current.moved = true;
       return;
     }
-    setTilt({ x: (p.x / w - 0.5) * 2, y: (p.y / h - 0.5) * 2 });
+    // target only; the loop eases toward it
+    tilt.current.tx = (p.x / w - 0.5) * 2;
+    tilt.current.ty = (p.y / h - 0.5) * 2;
   }
 
   function endDrag() {
@@ -297,13 +335,6 @@ export default function SystemView({
     setDragging(null);
   }
 
-  const layer = (depth: number) => ({
-    transform: `translate(${(tilt.x * depth).toFixed(2)}px, ${(
-      tilt.y * depth
-    ).toFixed(2)}px)`,
-  });
-
-  // Static decoration, kept out of the 60fps render path.
   const graticule = useMemo(
     () => (
       <>
@@ -336,8 +367,6 @@ export default function SystemView({
     [cx, cy, rx, ry, w, coreR]
   );
 
-  const posOf = new Map(bodies.map((b) => [b.subject, b]));
-
   return (
     <div
       className={"system-stage" + (dragging ? " dragging" : "")}
@@ -347,7 +376,8 @@ export default function SystemView({
       onPointerCancel={endDrag}
       onPointerLeave={() => {
         endDrag();
-        setTilt({ x: 0, y: 0 });
+        tilt.current.tx = 0;
+        tilt.current.ty = 0;
       }}
     >
       <svg className="system-svg" viewBox={`0 0 ${w} ${h}`}>
@@ -382,13 +412,21 @@ export default function SystemView({
           })}
         </defs>
 
-        <g className="graticule" style={layer(6)}>
+        <g
+          className="graticule"
+          ref={(el) => {
+            layerRefs.current.graticule = el;
+          }}
+        >
           {graticule}
         </g>
 
-        {/* the learner at the centre, the way the Void figure anchors
-            Warframe's chart */}
-        <g className="core" style={layer(-3)}>
+        <g
+          className="core"
+          ref={(el) => {
+            layerRefs.current.core = el;
+          }}
+        >
           <circle cx={cx} cy={cy} r={coreR * 3} fill="url(#core-glow)" />
           <image
             href="/art/character-portrait.png"
@@ -403,11 +441,14 @@ export default function SystemView({
           <circle cx={cx} cy={cy} r={coreR * 0.11} className="core-spark" />
         </g>
 
-        <g className="planets" style={layer(14)}>
+        <g
+          className="planets"
+          ref={(el) => {
+            layerRefs.current.planets = el;
+          }}
+        >
           {specs.map((s) => {
-            // Falls back to the orbit slot so the server render — which never
-            // runs a frame of the simulation — still draws the whole system.
-            const b = posOf.get(s.subject) ?? homeOf(s.baseAngle, s.spread);
+            const home = homeOf(s.baseAngle, s.spread);
             const id = s.subject.replace(/\W+/g, "-").toLowerCase();
             const r = s.r;
             const ringR = r + 9;
@@ -433,12 +474,15 @@ export default function SystemView({
             return (
               <g
                 key={s.subject}
+                ref={(el) => {
+                  nodeRefs.current.set(s.subject, el);
+                }}
                 className={
                   "planet" +
                   (isHot ? " hot" : "") +
                   (dragging === s.subject ? " grabbed" : "")
                 }
-                transform={`translate(${b.x.toFixed(2)} ${b.y.toFixed(2)})`}
+                transform={`translate(${home.x.toFixed(2)} ${home.y.toFixed(2)})`}
                 tabIndex={0}
                 role="button"
                 aria-label={`${s.subject}, ${s.total} skills, ${s.counts.open} unlocked`}
@@ -450,7 +494,6 @@ export default function SystemView({
                   setDragging(s.subject);
                 }}
                 onPointerUp={() => {
-                  // A drag that ends on the planet must not also open it.
                   const wasDrag = dragRef.current?.moved;
                   endDrag();
                   if (!wasDrag) onOpen(s.subject);
@@ -464,22 +507,25 @@ export default function SystemView({
                   }
                 }}
               >
-                {/* Same trap as the constellations: the halo and both labels
-                    are pointer-events:none, so without an explicit target the
-                    planet is only grabbable on its own small disc. */}
+                {/* The halo and both labels are pointer-events:none, so without
+                    explicit targets the planet is only grabbable on its disc. */}
                 <circle className="planet-hit" r={tickR + tickLen * 2.4} />
                 <rect
                   className="planet-hit"
                   x={-Math.max(90, tickR + 30)}
                   y={tickR}
                   width={Math.max(180, (tickR + 30) * 2)}
-                  height={labelTop + (lines.length - 1) * (labelSize + 3) + metaSize + 12 - tickR}
+                  height={
+                    labelTop +
+                    (lines.length - 1) * (labelSize + 3) +
+                    metaSize +
+                    12 -
+                    tickR
+                  }
                   rx="10"
                 />
                 <circle className="planet-halo" r={r * 2.6} />
 
-                {/* outer bearing ring: slow ticks, the technical furniture that
-                    makes it read as an instrument rather than a marble */}
                 <g className="tick-ring">
                   {Array.from({ length: 24 }, (_, i) => {
                     const a = (i * 15 * Math.PI) / 180;
@@ -503,8 +549,6 @@ export default function SystemView({
                   <path key={seg.k} d={seg.d} className={"planet-seg " + seg.k} />
                 ))}
 
-                {/* holographic body: a dark shell with a wireframe globe inside
-                    and a lit limb, not a naturalistic sphere */}
                 <circle className="planet-body" r={r} />
                 <g className="planet-wire" clipPath={`url(#globe-${id})`}>
                   <ellipse rx={r} ry={r * 0.3} />
@@ -513,19 +557,13 @@ export default function SystemView({
                   <ellipse rx={r * 0.34} ry={r} />
                   <ellipse rx={r * 0.72} ry={r} />
                 </g>
-                <path
-                  className="planet-limb"
-                  d={arcPath(r - 1, 20, 160)}
-                />
+                <path className="planet-limb" d={arcPath(r - 1, 20, 160)} />
                 <circle className="planet-core" r={r * 0.16} />
 
-                {/* a moon, because one orbiting dot does more for "alive" than
-                    any amount of glow */}
                 <g className="planet-sat">
                   <circle cx={r * 1.55} cy="0" r={Math.max(1.4, r * 0.07)} />
                 </g>
 
-                {/* target brackets, on hover only */}
                 <g className="planet-lock">
                   {[
                     [-1, -1],

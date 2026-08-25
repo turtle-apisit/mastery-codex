@@ -5,7 +5,6 @@ import type { Concept } from "@/lib/vault";
 import { buildClusterLayout } from "@/lib/clusterGraph";
 import { useViewport } from "@/lib/useViewport";
 
-const LABEL_SCALE = 0.8;
 const STATUSES = ["mastered", "training", "untrained", "locked"] as const;
 
 export function statusClass(c: Concept): string {
@@ -44,8 +43,10 @@ export default function ConstellationGraph({
 
   const {
     hostRef,
-    box,
-    scale,
+
+    svgRef,
+    initialViewBox,
+    labelsOn,
     dragging,
     didDrag,
     fit,
@@ -55,7 +56,8 @@ export default function ConstellationGraph({
   } = useViewport(layout);
 
   const active = layout.byId.has(selected ?? "") ? selected : null;
-  const showLabels = scale >= LABEL_SCALE;
+  const showLabels = labelsOn;
+
 
   const chain = useMemo(() => {
     if (!selected) return null;
@@ -97,7 +99,8 @@ export default function ConstellationGraph({
       >
         <svg
           className="neural-svg"
-          viewBox={[box.x, box.y, box.w, box.h].join(" ")}
+          ref={svgRef}
+          viewBox={initialViewBox}
           preserveAspectRatio="xMidYMid meet"
           role="img"
           aria-label={`${subject}: ${layout.clusters.length} lecture groups containing ${concepts.length} skills. Select a group to expand it.`}

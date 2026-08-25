@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 export type Box = { x: number; y: number; w: number; h: number };
 
@@ -22,31 +22,71 @@ export type ViewportOptions = {
    */
   readableFrom?: number;
   readableScale?: number;
+  /** on-screen scale at or above which labels are worth drawing */
+  labelScale?: number;
 };
 
+/**
+ * Pan/zoom over an SVG viewBox.
+ *
+ * The viewBox is written straight to the element rather than held in state.
+ * Panning fires on every pointermove, and routing that through React re-rendered
+ * the entire graph — several hundred SVG nodes — once per frame, which is what
+ * made dragging feel like it was catching. React now only re-renders when
+ * something *discrete* changes, which in practice is the label-visibility flag
+ * crossing its threshold.
+ */
 export function useViewport(
   content: { width: number; height: number },
   opts: ViewportOptions = {}
 ) {
-  const { readableFrom = 660, readableScale = 0.95 } = opts;
+  const {
+    readableFrom = 660,
+    readableScale = 0.95,
+    labelScale = 0.8,
+  } = opts;
 
   const hostRef = useRef<HTMLDivElement | null>(null);
-  const [host, setHost] = useState({ w: 0, h: 0 });
-  const [box, setBox] = useState<Box>({
-    x: 0,
-    y: 0,
-    w: content.width,
-    h: content.height,
-  });
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const boxRef = useRef<Box>({ x: 0, y: 0, w: content.width, h: content.height });
 
-  // Pointers currently down, keyed by pointerId, so one finger pans and two
-  // pinch without pulling in a gesture library.
+  const [labelsOn, setLabelsOn] = useState(false);
+  const labelsOnRef = useRef(false);
+  const [dragging, setDragging] = useState(false);
+
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const pinch = useRef<{ dist: number; box: Box; cx: number; cy: number } | null>(
     null
   );
-  const [dragging, setDragging] = useState(false);
   const moved = useRef(false);
+
+  /** Push the current box onto the element and reconcile the label flag. */
+  const apply = useCallback(() => {
+    const b = boxRef.current;
+    svgRef.current?.setAttribute(
+      "viewBox",
+      `${b.x.toFixed(2)} ${b.y.toFixed(2)} ${b.w.toFixed(2)} ${b.h.toFixed(2)}`
+    );
+    const hostW = hostRef.current?.clientWidth ?? 0;
+    if (!hostW || !b.w) return;
+    const on = hostW / b.w >= labelScale;
+    if (on !== labelsOnRef.current) {
+      labelsOnRef.current = on;
+      setLabelsOn(on);
+    }
+  }, [labelScale]);
+
+  // React owns the initial viewBox attribute, so it would clobber the live one
+  // on any re-render. Re-applying after every commit keeps the two in step.
+  useLayoutEffect(apply);
+
+  const setBox = useCallback(
+    (next: Box) => {
+      boxRef.current = next;
+      apply();
+    },
+    [apply]
+  );
 
   const fit = useCallback(() => {
     const el = hostRef.current;
@@ -64,10 +104,9 @@ export function useViewport(
       w: vw,
       h: vh,
     });
-  }, [content.width, content.height]);
+  }, [content.width, content.height, setBox]);
 
-  /** Open at the left edge of the network — where the roots are — at a scale
-   *  where labels are actually legible. */
+  /** Open at the left edge — where the roots are — at a legible scale. */
   const showStart = useCallback(
     (target: number) => {
       const el = hostRef.current;
@@ -75,49 +114,33 @@ export function useViewport(
       const w = el.clientWidth;
       const h = el.clientHeight;
       if (!w || !h) return;
-      const vw = w / target;
-      const vh = h / target;
-      setBox({ x: 0, y: (content.height - vh) / 2, w: vw, h: vh });
+      setBox({ x: 0, y: (content.height - h / target) / 2, w: w / target, h: h / target });
     },
-    [content.height]
+    [content.height, setBox]
   );
-
-  useEffect(() => {
-    const el = hostRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => {
-      setHost({ w: el.clientWidth, h: el.clientHeight });
-    });
-    ro.observe(el);
-    setHost({ w: el.clientWidth, h: el.clientHeight });
-    return () => ro.disconnect();
-  }, []);
 
   // Choose the opening view once the host has a measured size, and again if the
   // graph or the host changes shape (orientation flip, panel resize).
-  const shapeKey = `${host.w}x${host.h}:${content.width}x${content.height}`;
-  const lastShape = useRef("");
+  const shapeRef = useRef("");
   useEffect(() => {
-    if (!host.w || !host.h) return;
-    if (lastShape.current === shapeKey) return;
-    lastShape.current = shapeKey;
-    const fitScale = Math.min(host.w / content.width, host.h / content.height);
-    if (host.w >= readableFrom && fitScale < readableScale) showStart(readableScale);
-    else fit();
-  }, [
-    shapeKey,
-    host.w,
-    host.h,
-    content.width,
-    content.height,
-    readableFrom,
-    readableScale,
-    fit,
-    showStart,
-  ]);
-
-  /** Current on-screen scale: host pixels per graph unit. */
-  const scale = host.w && box.w ? host.w / box.w : 1;
+    const el = hostRef.current;
+    if (!el) return;
+    const settle = () => {
+      const w = el.clientWidth;
+      const h = el.clientHeight;
+      if (!w || !h) return;
+      const key = `${w}x${h}:${content.width}x${content.height}`;
+      if (shapeRef.current === key) return;
+      shapeRef.current = key;
+      const fitScale = Math.min(w / content.width, h / content.height);
+      if (w >= readableFrom && fitScale < readableScale) showStart(readableScale);
+      else fit();
+    };
+    const ro = new ResizeObserver(settle);
+    ro.observe(el);
+    settle();
+    return () => ro.disconnect();
+  }, [content.width, content.height, readableFrom, readableScale, fit, showStart]);
 
   const clampW = useCallback((hostW: number, w: number) => {
     return Math.min(hostW / MIN_SCALE, Math.max(hostW / MAX_SCALE, w));
@@ -125,53 +148,47 @@ export function useViewport(
 
   const zoomAt = useCallback(
     (factor: number, cx: number, cy: number) => {
-      setBox((b) => {
-        const hostW = hostRef.current?.clientWidth || b.w;
-        const w = clampW(hostW, b.w / factor);
-        const f = w / b.w;
-        // Keep the point under the cursor pinned while scaling.
-        return {
-          x: cx - (cx - b.x) * f,
-          y: cy - (cy - b.y) * f,
-          w,
-          h: b.h * f,
-        };
-      });
+      const b = boxRef.current;
+      const hostW = hostRef.current?.clientWidth || b.w;
+      const w = clampW(hostW, b.w / factor);
+      const f = w / b.w;
+      // Keep the point under the cursor pinned while scaling.
+      setBox({ x: cx - (cx - b.x) * f, y: cy - (cy - b.y) * f, w, h: b.h * f });
     },
-    [clampW]
+    [clampW, setBox]
   );
 
   const zoomBy = useCallback(
     (factor: number) => {
-      setBox((b) => {
-        const hostW = hostRef.current?.clientWidth || b.w;
-        const w = clampW(hostW, b.w / factor);
-        const f = w / b.w;
-        const cx = b.x + b.w / 2;
-        const cy = b.y + b.h / 2;
-        return { x: cx - w / 2, y: cy - (b.h * f) / 2, w, h: b.h * f };
-      });
+      const b = boxRef.current;
+      const hostW = hostRef.current?.clientWidth || b.w;
+      const w = clampW(hostW, b.w / factor);
+      const f = w / b.w;
+      const cx = b.x + b.w / 2;
+      const cy = b.y + b.h / 2;
+      setBox({ x: cx - w / 2, y: cy - (b.h * f) / 2, w, h: b.h * f });
     },
-    [clampW]
-  );
-
-  /** Client point -> graph coordinates. */
-  const toGraph = useCallback(
-    (clientX: number, clientY: number) => {
-      const el = hostRef.current;
-      if (!el) return { x: 0, y: 0 };
-      const r = el.getBoundingClientRect();
-      return {
-        x: box.x + ((clientX - r.left) / r.width) * box.w,
-        y: box.y + ((clientY - r.top) / r.height) * box.h,
-      };
-    },
-    [box]
+    [clampW, setBox]
   );
 
   /** Pan so a point sits in the middle of the view, without changing zoom. */
-  const centerOn = useCallback((x: number, y: number) => {
-    setBox((b) => ({ ...b, x: x - b.w / 2, y: y - b.h / 2 }));
+  const centerOn = useCallback(
+    (x: number, y: number) => {
+      const b = boxRef.current;
+      setBox({ ...b, x: x - b.w / 2, y: y - b.h / 2 });
+    },
+    [setBox]
+  );
+
+  const toGraph = useCallback((clientX: number, clientY: number) => {
+    const el = hostRef.current;
+    const b = boxRef.current;
+    if (!el) return { x: 0, y: 0 };
+    const r = el.getBoundingClientRect();
+    return {
+      x: b.x + ((clientX - r.left) / r.width) * b.w,
+      y: b.y + ((clientY - r.top) / r.height) * b.h,
+    };
   }, []);
 
   const onPointerDown = (e: React.PointerEvent) => {
@@ -185,7 +202,7 @@ export function useViewport(
       const mid = toGraph((a.x + b.x) / 2, (a.y + b.y) / 2);
       pinch.current = {
         dist: Math.hypot(a.x - b.x, a.y - b.y) || 1,
-        box,
+        box: { ...boxRef.current },
         cx: mid.x,
         cy: mid.y,
       };
@@ -199,11 +216,12 @@ export function useViewport(
     const el = hostRef.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
+    const b = boxRef.current;
 
     if (pointers.current.size >= 2 && pinch.current) {
       pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
-      const [a, b] = [...pointers.current.values()];
-      const dist = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+      const [p1, p2] = [...pointers.current.values()];
+      const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y) || 1;
       const start = pinch.current;
       const w = clampW(r.width, start.box.w * (start.dist / dist));
       const f = w / start.box.w;
@@ -223,10 +241,10 @@ export function useViewport(
     if (Math.abs(e.clientX - prev.x) > 6 || Math.abs(e.clientY - prev.y) > 6) {
       moved.current = true;
     }
-    const dx = ((e.clientX - prev.x) / r.width) * box.w;
-    const dy = ((e.clientY - prev.y) / r.height) * box.h;
+    const dx = ((e.clientX - prev.x) / r.width) * b.w;
+    const dy = ((e.clientY - prev.y) / r.height) * b.h;
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    setBox((b) => ({ ...b, x: b.x - dx, y: b.y - dy }));
+    setBox({ ...b, x: b.x - dx, y: b.y - dy });
   };
 
   const endPointer = (e: React.PointerEvent) => {
@@ -245,18 +263,21 @@ export function useViewport(
       if (Math.abs(e.deltaY) < 1) return;
       e.preventDefault();
       const r = el.getBoundingClientRect();
-      const gx = box.x + ((e.clientX - r.left) / r.width) * box.w;
-      const gy = box.y + ((e.clientY - r.top) / r.height) * box.h;
+      const b = boxRef.current;
+      const gx = b.x + ((e.clientX - r.left) / r.width) * b.w;
+      const gy = b.y + ((e.clientY - r.top) / r.height) * b.h;
       zoomAt(e.deltaY < 0 ? 1.14 : 1 / 1.14, gx, gy);
     };
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
-  }, [box, zoomAt]);
+  }, [zoomAt]);
 
   return {
     hostRef,
-    box,
-    scale,
+    svgRef,
+    /** viewBox for the server render; live updates go straight to the element */
+    initialViewBox: `0 0 ${content.width} ${content.height}`,
+    labelsOn,
     dragging,
     /** true when the pointer sequence just ended was a drag, so click can ignore it */
     didDrag: () => moved.current,
