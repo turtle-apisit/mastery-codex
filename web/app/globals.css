@@ -17,6 +17,15 @@
   --locked:oklch(46% 0.031 232);
   --rusty:oklch(68% 0.170 315);
 
+  /* Chrome is gold, live data is cyan. Warframe's star chart splits them the
+     same way: the frame, the counters and the buttons are warm metal, while
+     anything that is actually energy reads cool. Keeping that split means the
+     UI never competes with the graph for the same colour. */
+  --gold:oklch(81% 0.115 86);
+  --gold-dim:oklch(62% 0.082 86);
+  --gold-soft:color-mix(in oklch, var(--gold) 13%, transparent);
+  --gold-line:color-mix(in oklch, var(--gold) 34%, transparent);
+
   --accent-soft:color-mix(in oklch, var(--accent) 14%, transparent);
   --mastered-soft:color-mix(in oklch, var(--mastered) 14%, transparent);
   --training-soft:color-mix(in oklch, var(--training) 14%, transparent);
@@ -567,6 +576,182 @@ button{font-family:inherit;}
   }
   .chev.closed{transform:rotate(0deg);}
 
+
+  /* ---------- star chart: system view (level 1) ---------- */
+
+  .system-stage{
+    cursor:default;
+    position:relative;
+    height:clamp(430px, 72vh, 780px);
+    overflow:hidden;
+    touch-action:pan-y; /* nothing to pan here, so the page keeps scrolling */
+    background:
+      radial-gradient(ellipse 55% 45% at 50% 50%, color-mix(in oklch, var(--gold) 6%, transparent), transparent 70%),
+      radial-gradient(ellipse 90% 70% at 22% 28%, color-mix(in oklch, var(--accent) 9%, transparent), transparent 72%),
+      radial-gradient(ellipse 80% 65% at 82% 76%, color-mix(in oklch, var(--rusty) 5%, transparent), transparent 70%),
+      var(--ground);
+  }
+  /* corner vignette: the reference frame is markedly darker at the edges,
+     which is what keeps the eye in the middle */
+  .system-stage::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(ellipse 78% 78% at 50% 50%, transparent 42%, var(--ground) 100%);
+    opacity:.85;
+  }
+  .system-stage.dragging{cursor:grabbing;}
+  .system-svg{position:relative;z-index:1;display:block;width:100%;height:100%;}
+
+  .orbit{
+    fill:none;
+    stroke:color-mix(in oklch, var(--gold) 15%, transparent);
+    stroke-width:1;
+    stroke-dasharray:2 9;
+  }
+  .orbit-main{
+    stroke:color-mix(in oklch, var(--gold) 26%, transparent);
+    stroke-dasharray:3 7;
+  }
+  .ecliptic{stroke:color-mix(in oklch, var(--gold) 12%, transparent);stroke-width:1;}
+  .spoke{stroke:color-mix(in oklch, var(--gold) 7%, transparent);stroke-width:1;}
+  .graticule{transition:transform .5s cubic-bezier(.2,.7,.3,1);}
+
+  .core{transition:transform .5s cubic-bezier(.2,.7,.3,1);}
+  .core-portrait{opacity:.5;}
+  .core-spark{
+    fill:var(--gold);
+    filter:drop-shadow(0 0 14px var(--gold));
+    animation:core-breathe 5.5s ease-in-out infinite;
+  }
+  @keyframes core-breathe{
+    0%,100%{opacity:.75;}
+    50%{opacity:1;}
+  }
+
+  .planets{transition:transform .5s cubic-bezier(.2,.7,.3,1);}
+  .planet{cursor:grab;}
+  .planet.grabbed{cursor:grabbing;}
+  .planet:focus{outline:none;}
+  .planet-halo{
+    fill:color-mix(in oklch, var(--accent) 7%, transparent);
+    transition:fill .25s ease;
+  }
+
+  /* holographic shell: dark and translucent, so the wireframe inside reads
+     through it. A lit marble would look like clip art next to the graph. */
+  .planet-body{
+    fill:color-mix(in oklch, var(--ground) 62%, transparent);
+    stroke:color-mix(in oklch, var(--gold) 38%, transparent);
+    stroke-width:1;
+    transition:stroke .25s ease;
+  }
+  .planet-wire ellipse{
+    fill:none;
+    stroke:color-mix(in oklch, var(--accent) 26%, transparent);
+    stroke-width:.75;
+    transition:stroke .25s ease;
+  }
+  /* one lit edge, the only thing suggesting a light source */
+  .planet-limb{
+    fill:none;
+    stroke:var(--accent);
+    stroke-width:1.4;
+    opacity:.5;
+    stroke-linecap:round;
+    transition:opacity .25s ease,stroke .25s ease;
+  }
+  .planet-core{
+    fill:var(--accent);
+    opacity:.55;
+    transition:opacity .25s ease;
+  }
+
+  /* bearing ring — instrument furniture, counter-rotating against the moon */
+  .tick-ring{animation:tick-spin 64s linear infinite;transform-origin:0 0;}
+  .tick{stroke:color-mix(in oklch, var(--gold) 22%, transparent);stroke-width:1;}
+  .tick.major{stroke:color-mix(in oklch, var(--gold) 46%, transparent);stroke-width:1.2;}
+  @keyframes tick-spin{to{transform:rotate(360deg);}}
+
+  .planet-sat{animation:sat-orbit 13s linear infinite;transform-origin:0 0;}
+  .planet-sat circle{fill:var(--gold);opacity:.85;}
+  @keyframes sat-orbit{to{transform:rotate(-360deg);}}
+
+  .planet-track{
+    fill:none;
+    stroke:color-mix(in oklch, var(--gold) 16%, transparent);
+    stroke-width:2.5;
+  }
+  .planet-seg{fill:none;stroke-width:2.5;stroke-linecap:round;}
+  .planet-seg.mastered{stroke:var(--mastered);}
+  .planet-seg.training{stroke:var(--training);}
+  .planet-seg.untrained{stroke:var(--untrained);}
+
+  .planet-lock path{
+    fill:none;stroke:var(--gold);stroke-width:1.2;
+    opacity:0;transition:opacity .2s ease;
+  }
+
+  /* Wide-tracked uppercase floating free of any box — the single most
+     recognisable thing about the reference's typography. */
+  .planet-name{
+    fill:var(--text);
+    font-family:var(--font-mono);
+    font-weight:400;
+    letter-spacing:.22em;
+    text-anchor:middle;
+    pointer-events:none;
+    transition:fill .25s ease;
+  }
+  .planet-meta{
+    fill:var(--gold-dim);
+    font-family:var(--font-mono);
+    letter-spacing:.16em;
+    text-anchor:middle;
+    pointer-events:none;
+    transition:fill .25s ease;
+  }
+
+  .planet.hot .planet-halo{fill:color-mix(in oklch, var(--accent) 15%, transparent);}
+  .planet.hot .planet-body{stroke:var(--gold);}
+  .planet.hot .planet-wire ellipse{stroke:color-mix(in oklch, var(--accent) 48%, transparent);}
+  .planet.hot .planet-limb{opacity:.95;}
+  .planet.hot .planet-core{opacity:1;}
+  .planet.hot .planet-name{fill:var(--gold);}
+  .planet.hot .planet-meta{fill:var(--gold);}
+  .planet.hot .planet-lock path{opacity:.8;}
+  .planet:focus-visible .planet-body{stroke:var(--accent);stroke-width:2.5;}
+
+  /* gold frame brackets at the corners, the way the reference anchors its
+     chrome to the edges and leaves the middle empty */
+  .system-chrome{position:absolute;inset:0;pointer-events:none;z-index:2;}
+  .system-chrome .corner{
+    position:absolute;width:18px;height:18px;
+    border:1px solid var(--gold-line);
+  }
+  .system-chrome .tl{top:10px;left:10px;border-right:0;border-bottom:0;}
+  .system-chrome .tr{top:10px;right:10px;border-left:0;border-bottom:0;}
+  .system-chrome .bl{bottom:10px;left:10px;border-right:0;border-top:0;}
+  .system-chrome .br{bottom:10px;right:10px;border-left:0;border-top:0;}
+
+  .system-caption{
+    position:absolute;left:50%;bottom:12px;transform:translateX(-50%);
+    margin:0;z-index:2;pointer-events:none;
+    font-family:var(--font-mono);font-size:9.5px;
+    letter-spacing:.24em;text-transform:uppercase;
+    color:var(--gold-dim);
+  }
+
+  .back-btn{
+    display:inline-flex;align-items:center;gap:var(--sp-2);flex:none;
+    font-family:var(--font-mono);font-size:var(--step--1);
+    letter-spacing:.12em;text-transform:uppercase;
+    color:var(--gold);
+    background:transparent;
+    border:1px solid var(--gold-line);border-radius:var(--r-sm);
+    padding:var(--sp-2) var(--sp-3);min-height:34px;
+    cursor:pointer;transition:background .15s ease,border-color .15s ease;
+  }
+  .back-btn:hover{background:var(--gold-soft);border-color:var(--gold);}
+  .back-btn span{font-size:15px;line-height:1;}
   /* ---------- neural network view ---------- */
 
   .neural{display:flex;flex-direction:column;}
@@ -686,6 +871,102 @@ button{font-family:inherit;}
     background:color-mix(in oklch, var(--surface) 80%, transparent);
     border:1px solid var(--border);border-radius:var(--r-pill);
     pointer-events:none;white-space:nowrap;
+  }
+
+
+  /* ---------- level 2: constellations that expand in place ---------- */
+
+  /* the field behind an opened group, so it still reads as one thing */
+  .cluster-field{
+    fill:color-mix(in oklch, var(--accent) 3.5%, transparent);
+    stroke:var(--gold-line);
+    stroke-width:1;
+    stroke-dasharray:5 7;
+  }
+
+  .cstar{cursor:pointer;transition:opacity .2s ease;}
+  /* `transparent` and not `none`: a fill of none receives no pointer events at
+     all, which is the whole reason these targets are needed. */
+  .cstar-hit,.chead-hit,.planet-hit{fill:transparent;stroke:none;}
+  .cstar:focus{outline:none;}
+  .cstar-nebula{pointer-events:none;}
+  .cstar-ring{
+    fill:none;
+    stroke:var(--gold-line);
+    stroke-width:1;
+    stroke-dasharray:2 6;
+    transition:stroke .2s ease;
+  }
+  .cstar-web line{
+    stroke:color-mix(in oklch, var(--accent) 16%, transparent);
+    stroke-width:.6;
+  }
+  .cstar-dot{transition:opacity .2s ease;}
+  .cstar-dot.mastered{fill:var(--mastered);}
+  .cstar-dot.training{fill:var(--training);}
+  .cstar-dot.untrained{fill:var(--untrained);}
+  .cstar-dot.locked{fill:var(--locked);opacity:.75;}
+  .cstar-core{
+    fill:var(--gold);
+    opacity:.9;
+    filter:drop-shadow(0 0 5px var(--gold));
+  }
+  .cstar-name{
+    fill:var(--text);
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.16em;
+    text-anchor:middle;
+    pointer-events:none;
+    transition:fill .2s ease;
+  }
+  .cstar-meta{
+    fill:var(--gold-dim);
+    font-family:var(--font-mono);
+    font-size:8.5px;
+    letter-spacing:.14em;
+    text-anchor:middle;
+    pointer-events:none;
+    transition:fill .2s ease;
+  }
+  .cstar:hover .cstar-ring,
+  .cstar:focus-visible .cstar-ring{stroke:var(--gold);stroke-dasharray:none;}
+  .cstar:hover .cstar-name{fill:var(--gold);}
+  .cstar:hover .cstar-meta{fill:var(--gold);}
+  .cstar.dim{opacity:.3;}
+
+  /* header on an opened group, doubling as the close control */
+  .chead{cursor:pointer;}
+  .chead:focus{outline:none;}
+  .chead-name{
+    fill:var(--gold);
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.16em;
+    transition:fill .2s ease;
+  }
+  .chead-close{fill:var(--gold-dim);font-size:10px;}
+  .chead-meta{
+    fill:var(--text-faint);
+    font-family:var(--font-mono);
+    font-size:8.5px;
+    letter-spacing:.14em;
+  }
+  .chead:hover .chead-name,
+  .chead:focus-visible .chead-name{fill:var(--text);}
+  .chead:hover .chead-close{fill:var(--untrained);}
+
+  /* a prerequisite that leaves its group is drawn differently, because that
+     crossing is the thing a per-group drill-down would have hidden */
+  .synapse.cross{
+    stroke:color-mix(in oklch, var(--gold) 34%, transparent);
+    stroke-dasharray:6 5;
+    opacity:.7;
+  }
+  .synapse.cross.lit{
+    stroke:var(--accent);
+    stroke-dasharray:inherit;
+    opacity:1;
   }
 
   /* selection readout — this is how the graph is read on a phone, where the
@@ -1129,6 +1410,9 @@ button{font-family:inherit;}
   .bar-shine{animation:none;opacity:0;}
   .tile,.inv-chip,.cast-chip{transition:none;}
   .synapse,.neuron,.soma,.nucleus,.axon-label,.halo,.chev{transition:none;}
+  .graticule,.core,.planets{transition:none;}
+  .tick-ring,.planet-sat{animation:none;}
+  .core-spark{animation:none;}
   .synapse.lit{animation:none;stroke-dasharray:none;}
   .neuron.selected .halo{animation:none;}
   .tile:hover,.inv-chip:hover,.cast-chip:hover{transform:none;}

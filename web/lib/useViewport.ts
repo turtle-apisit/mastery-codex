@@ -218,7 +218,9 @@ export function useViewport(
     }
 
     if (!dragging) return;
-    if (Math.abs(e.clientX - prev.x) > 2 || Math.abs(e.clientY - prev.y) > 2) {
+    // 6px, not 2: a tap on a touchscreen drifts a few pixels before it lifts,
+    // and treating that as a drag swallowed the click on whatever was tapped.
+    if (Math.abs(e.clientX - prev.x) > 6 || Math.abs(e.clientY - prev.y) > 6) {
       moved.current = true;
     }
     const dx = ((e.clientX - prev.x) / r.width) * box.w;

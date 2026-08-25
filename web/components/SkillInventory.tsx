@@ -3,12 +3,13 @@
 import { useMemo, useState } from "react";
 import type { Concept } from "@/lib/vault";
 import { buildGraph } from "@/lib/skillGraph";
-import NeuralGraph, { statusClass } from "@/components/NeuralGraph";
+import ConstellationGraph, { statusClass } from "@/components/ConstellationGraph";
+import SystemView from "@/components/SystemView";
 
 type StatusFilter = "mastered" | "training" | "untrained";
 type FlagFilter = "rusty" | "locked";
 type Filter = "all" | StatusFilter | FlagFilter;
-type View = "graph" | "list";
+type View = "chart" | "list";
 
 const STATUS_FILTERS: StatusFilter[] = ["mastered", "training", "untrained"];
 const FLAG_FILTERS: FlagFilter[] = ["rusty", "locked"];
@@ -30,9 +31,10 @@ const label = (f: Filter) =>
 
 export default function SkillInventory({ concepts }: { concepts: Concept[] }) {
   const [filter, setFilter] = useState<Filter>("all");
-  const [view, setView] = useState<View>("graph");
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const [view, setView] = useState<View>("chart");
   const [selected, setSelected] = useState<string | null>(null);
+  /** null = system view (level 1); a subject = inside that planet (level 2) */
+  const [openSubject, setOpenSubject] = useState<string | null>(null);
 
   const counts = useMemo(() => {
     const c = { mastered: 0, training: 0, untrained: 0, locked: 0, rusty: 0 };
@@ -57,13 +59,15 @@ export default function SkillInventory({ concepts }: { concepts: Concept[] }) {
     }));
   }, [concepts]);
 
-  function toggleCollapse(subject: string) {
-    setCollapsed((prev) => {
-      const next = new Set(prev);
-      if (next.has(subject)) next.delete(subject);
-      else next.add(subject);
-      return next;
-    });
+  const open = subjects.find((s) => s.subject === openSubject) ?? null;
+
+  function enter(subject: string) {
+    setOpenSubject(subject);
+    setSelected(null);
+  }
+  function leave() {
+    setOpenSubject(null);
+    setSelected(null);
   }
 
   return (
@@ -73,7 +77,7 @@ export default function SkillInventory({ concepts }: { concepts: Concept[] }) {
           Skills Acquired<span className="inv-total num">{concepts.length}</span>
         </h2>
         <div className="view-toggle" role="group" aria-label="Skill view">
-          {(["graph", "list"] as View[]).map((v) => (
+          {(["chart", "list"] as View[]).map((v) => (
             <button
               key={v}
               type="button"
@@ -81,7 +85,7 @@ export default function SkillInventory({ concepts }: { concepts: Concept[] }) {
               onClick={() => setView(v)}
               aria-pressed={view === v}
             >
-              {v === "graph" ? "Network" : "List"}
+              {v === "chart" ? "Star Chart" : "List"}
             </button>
           ))}
         </div>
@@ -133,63 +137,68 @@ export default function SkillInventory({ concepts }: { concepts: Concept[] }) {
             <strong>{label(filter)}</strong> is a flag, not a bucket — these
             skills are also counted under their status above.
           </>
-        ) : view === "graph" ? (
+        ) : view === "list" ? (
+          <>Every skill in the vault, grouped by discipline.</>
+        ) : open ? (
           <>Drag to pan, pinch or scroll to zoom, tap a neuron to trace it.</>
         ) : (
-          <>Every skill in the vault, grouped by subject.</>
+          <>Three disciplines orbiting the codex. Select one to enter it.</>
         )}
       </p>
 
-      <div className="inv-groups">
-        {subjects.map(({ subject, concepts: list, graph }) => {
-          const hits = list.filter((c) => matches(c, filter)).length;
-          if (hits === 0) return null;
-          const isCollapsed = collapsed.has(subject);
-
-          return (
-            <section className="subject-card cut-sm" key={subject}>
-              <button
-                type="button"
-                className="subject-head"
-                onClick={() => toggleCollapse(subject)}
-                aria-expanded={!isCollapsed}
-              >
-                <span
-                  className={"chev" + (isCollapsed ? " closed" : "")}
-                  aria-hidden="true"
-                />
-                <span className="subject-name">{subject}</span>
-                <span className="subject-meta num">
-                  {filter === "all" ? (
-                    <>
-                      {list.length}
-                      <i> skills</i> · {graph.edges.length}
-                      <i> links</i>
-                    </>
-                  ) : (
-                    <>
-                      {hits} of {list.length}
-                    </>
-                  )}
-                </span>
-              </button>
-
-              {!isCollapsed &&
-                (view === "graph" ? (
-                  <NeuralGraph
-                    graph={graph}
-                    subject={subject}
-                    isLit={(c) => matches(c, filter)}
-                    selected={selected}
-                    onSelect={setSelected}
-                  />
-                ) : (
-                  <SkillList concepts={list} filter={filter} />
-                ))}
-            </section>
-          );
-        })}
-      </div>
+      {view === "list" ? (
+        <div className="inv-groups">
+          {subjects.map(({ subject, concepts: list }) => {
+            const hits = list.filter((c) => matches(c, filter)).length;
+            if (hits === 0) return null;
+            return (
+              <section className="subject-card cut-sm" key={subject}>
+                <div className="subject-head static">
+                  <span className="subject-name">{subject}</span>
+                  <span className="subject-meta num">
+                    {filter === "all" ? (
+                      <>
+                        {list.length}
+                        <i> skills</i>
+                      </>
+                    ) : (
+                      <>
+                        {hits} of {list.length}
+                      </>
+                    )}
+                  </span>
+                </div>
+                <SkillList concepts={list} filter={filter} />
+              </section>
+            );
+          })}
+        </div>
+      ) : open ? (
+        <section className="subject-card cut-sm">
+          <div className="subject-head static">
+            <button type="button" className="back-btn" onClick={leave}>
+              <span aria-hidden="true">‹</span> System
+            </button>
+            <span className="subject-name">{open.subject}</span>
+            <span className="subject-meta num">
+              {open.concepts.length}
+              <i> skills</i> · {open.graph.edges.length}
+              <i> links</i>
+            </span>
+          </div>
+          <ConstellationGraph
+            subject={open.subject}
+            concepts={open.concepts}
+            isLit={(c) => matches(c, filter)}
+            selected={selected}
+            onSelect={setSelected}
+          />
+        </section>
+      ) : (
+        <section className="subject-card cut-sm">
+          <SystemView subjects={subjects} onOpen={enter} />
+        </section>
+      )}
     </div>
   );
 }
