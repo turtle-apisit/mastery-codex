@@ -7,6 +7,7 @@ prerequisites:
 - Architectural Pattern
 source:
 - CH01_2_13illity_10Style 1.pdf
+- LLMArchi.pdf
 last_reviewed: null
 history:
 - date: '2026-08-24'
@@ -57,6 +58,24 @@ history:
 - The blackboard is **shared global mutable state** — normally an anti-pattern.
   Here it is the mechanism, which is why the **control component** is a named,
   separate part: something must decide which knowledge source runs next.
+
+## In agentic systems
+
+The LLM deck calls this **the quintessential foundation for Multi-Agent Systems
+(MAS)**.
+
+> A centralized, global data store (the "Blackboard") maintains the
+> **conversational state and execution graph**. Autonomous agents watch the
+> blackboard. **When an agent sees a data state it can solve, it activates,
+> performs work, updates the blackboard, and goes dormant.**
+
+> **Why it's used:** it allows **decoupling of diverse AI models**. Agents do not
+> need to know about each other; **they only interact with the shared state**.
+
+Nothing about the pattern changed — the knowledge sources are now models, and
+the blackboard holds a conversation instead of a sonar trace. Its original
+selection criterion still fits: reach for it when **no deterministic solution
+strategy is known**. See [[agentic-architectures]].
 
 ## Prerequisites
 

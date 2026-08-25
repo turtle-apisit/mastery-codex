@@ -9,6 +9,7 @@ source:
 - CH03_SEA604_SWArchStylePatterns_Rev02_2.pdf
 - CH01_2_13illity_10Style 1.pdf
 - class02_slides.pdf
+- LLMArchi.pdf
 last_reviewed: null
 history:
 - date: '2026-08-24'
@@ -71,6 +72,16 @@ semantic analysis, and code generation), workflows in bioinformatics,
 - **Master's Insight:** *error handling and transaction rollback across filters
   are complex; **state management must be handled carefully**.* Stateless filters
   make composition easy and make **recovering a half-finished pipeline hard**.
+
+## In LLM systems
+
+A **Simple (or Naive) RAG architecture fundamentally maps to this pattern** —
+four filters joined by one-way pipes, with no loops and no shared state. The
+mapping is developed in [[rag-as-a-pipe-and-filter-pipeline]].
+
+It is also where the style's limit shows: the moment a system needs **loops,
+state maintenance, and dynamic orchestration**, the linear pipeline is abandoned
+for the agentic patterns. See [[agentic-architectures]].
 
 ## Prerequisites
 

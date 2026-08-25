@@ -7,6 +7,7 @@ prerequisites:
 - Architectural Pattern
 source:
 - CH03_SEA604_SWArchStylePatterns_Rev02_2.pdf
+- LLMArchi.pdf
 last_reviewed: null
 history:
 - date: '2026-08-24'
@@ -102,6 +103,26 @@ share a single database**.
   access via REST**, it is **still only a single architecture quantum** because of
   the monolithic core — every request must first go through the core system to
   reach a plug-in.
+
+## In agentic systems
+
+The LLM deck names this the pattern for **single-agent** systems, citing Claude
+Code and Replit Agent.
+
+> **The core system is a minimalist, deterministic state loop** (e.g. **ReAct:
+> Reason + Act**). **Agent tools (databases, APIs) are plug-ins with a strict
+> interface.** The loop reads user intent, dynamically invokes a plug-in,
+> analyzes the result, and loops until done.
+
+> **Why it's used:** **prevents the core reasoning loop from bloating.** New
+> capabilities can be registered seamlessly as API plugins **without altering the
+> core logic**.
+
+This is the electronics-recycling argument again, unchanged: a growing
+`else if` chain of special cases becomes a registry lookup. The
+cyclomatic complexity moves out of the core and into independent plug-ins. See
+[[agentic-actions-and-auditability]] for why execution stays in a deterministic
+sandbox rather than inside the model.
 
 ## Prerequisites
 

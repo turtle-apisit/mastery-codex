@@ -6,6 +6,7 @@ prerequisites:
 - Service-Based Architecture Style
 source:
 - CH03_2_SEA604Microservices.pptx
+- LLMArchi.pdf
 last_reviewed: null
 history:
 - date: '2026-08-24'
@@ -71,6 +72,25 @@ to build and maintain, the benefits often outweigh the costs.**
 - The dependence on **automation** is not optional. Without deployment, testing
   and operational automation, the number of moving parts becomes unmanageable —
   which is why the style is rated **High** on complexity and maintenance cost.
+
+## In agentic systems
+
+> The industry consensus: **"Agents are just smart microservices."**
+
+Large applications break tasks down into microservice agents in two shapes:
+
+- **Hierarchical / Supervisor Pattern** — a master **"Orchestrator"** service
+  breaks requests into subtasks and hits independent microservice **"Workers"**.
+- **Peer-to-Peer / Mesh Network Pattern** — agents share a **horizontal
+  communication plane** to hand off tasks directly **based on domain expertise**.
+
+> **Why it's used:** solves **compounding error and context window bloat** by
+> enforcing **strict context isolation between services**.
+
+Note what the advantage is here. In ordinary microservices the isolation being
+bought is deployment and failure isolation; for agents it is **context**
+isolation — each agent carries only its own slice, so errors do not compound and
+no single context window has to hold everything. See [[agentic-architectures]].
 
 ## Prerequisites
 

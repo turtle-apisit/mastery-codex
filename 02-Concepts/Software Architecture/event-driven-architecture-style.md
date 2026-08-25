@@ -8,6 +8,7 @@ prerequisites:
 source:
 - CH03_SEA604_SWArchStylePatterns_Rev02_2.pdf
 - class02_slides.pdf
+- LLMArchi.pdf
 last_reviewed: null
 history:
 - date: '2026-08-24'
@@ -86,6 +87,23 @@ using a **correlation ID**, and using a **temporary queue**.
 
 - **Master's Insight:** the trade-offs are **non-deterministic execution order**,
   **eventual consistency challenges**, and **severe debugging complexity**.
+
+## In agentic systems
+
+> **Synchronous REST calls can cause agent networks to crash due to LLM
+> latency.**
+
+> Agents communicate asynchronously using an **event broker** (e.g. Kafka). A
+> user query emits `IntentChecked`. A routing agent emits `SearchRequired`. A
+> RAG agent completes the lookup and publishes `ContextRetrieved`.
+
+> **Why it's used:** gracefully manages **long-running agent loops**, handles
+> **rate-limiting thresholds** natively, and ensures **fault tolerance against
+> transient model API outages**.
+
+The decoupling in space and time that this style always offered turns out to be
+exactly what an unpredictable, rate-limited, slow external dependency requires.
+See [[resilience-against-llm-limits]].
 
 ## Prerequisites
 
