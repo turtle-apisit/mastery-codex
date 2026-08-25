@@ -619,7 +619,6 @@ button{font-family:inherit;}
   .graticule{will-change:transform;}
 
   .core{will-change:transform;}
-  .core-portrait{opacity:.5;}
   .core-spark{
     fill:var(--gold);
     filter:drop-shadow(0 0 14px var(--gold));
@@ -1184,30 +1183,6 @@ button{font-family:inherit;}
   }
   .cast-head-sub{font-size:var(--step-0);color:var(--text-muted);max-width:52ch;}
 
-  /* tier switcher — same pill language as the skills filter */
-  .cast-tabs{
-    display:flex;gap:var(--sp-2);flex-wrap:wrap;align-items:center;
-    margin-bottom:var(--sp-5);
-  }
-  .cast-tab{
-    font-family:var(--font-mono);font-size:var(--step--1);
-    letter-spacing:.06em;text-transform:uppercase;
-    color:var(--text-muted);
-    background:transparent;
-    border:1px solid var(--border-strong);
-    border-radius:var(--r-pill);
-    padding:var(--sp-2) var(--sp-4);
-    cursor:pointer;
-    transition:color .15s ease,border-color .15s ease,background .15s ease;
-  }
-  .cast-tab:hover{color:var(--text);border-color:var(--glass-border);}
-  .cast-tab.active{color:var(--ground);border-color:var(--accent);background:var(--accent);}
-  .cast-tab .n{margin-left:var(--sp-2);opacity:.65;}
-  .cast-tabs-desc{
-    font-size:var(--step--1);color:var(--text-faint);
-    margin-left:auto;padding-left:var(--sp-3);
-  }
-
   /* shared contract — disclosure, collapsed by default */
   .cast-contract-toggle{
     display:flex;align-items:center;gap:var(--sp-2);
@@ -1251,43 +1226,71 @@ button{font-family:inherit;}
   }
   .contract-list strong{color:var(--text);font-weight:600;}
 
-  /* roster — real portrait cards, not thumbnails */
-  .cast-select-row{
+  /* roster — one flat list, ordered by how often each agent is used */
+  .roster{
     display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(112px,1fr));
-    gap:var(--sp-3);
+    grid-template-columns:1fr;
+    gap:var(--sp-2);
     margin-bottom:var(--sp-5);
   }
-  .cast-chip{
-    display:flex;flex-direction:column;gap:var(--sp-2);
-    padding:0;background:none;border:none;cursor:pointer;text-align:center;
-    transition:transform .18s ease;
+  @container (min-width:560px){
+    .roster{grid-template-columns:repeat(2,1fr);}
   }
-  .cast-chip:hover{transform:translateY(-3px);}
-  .cast-chip-portrait{
-    position:relative;display:block;
-    width:100%;aspect-ratio:3/4;
-    overflow:hidden;
+  @media (min-width:900px){
+    .roster{grid-template-columns:repeat(2,1fr);}
+  }
+  .roster-card{
+    display:flex;align-items:center;gap:var(--sp-3);
+    padding:var(--sp-2) var(--sp-3);
+    text-align:left;cursor:pointer;
+    background:color-mix(in oklch, var(--surface) 55%, transparent);
     border:1px solid var(--border);
     border-radius:var(--r-md);
+    transition:border-color .18s ease,background .18s ease;
+  }
+  .roster-card:hover{border-color:var(--border-strong);}
+  .roster-card.active{
+    border-color:var(--gold);
+    background:var(--gold-soft);
+  }
+  .roster-portrait{
+    position:relative;display:block;flex:none;
+    width:52px;aspect-ratio:3/4;
+    overflow:hidden;
+    border:1px solid var(--border);
+    border-radius:var(--r-sm);
     background:color-mix(in oklch, var(--surface-2) 60%, transparent);
-    opacity:.55;
-    transition:opacity .18s ease,border-color .18s ease,box-shadow .18s ease;
+    opacity:.7;
+    transition:opacity .18s ease,border-color .18s ease;
   }
-  .cast-chip:hover .cast-chip-portrait{opacity:.85;}
-  .cast-chip.active .cast-chip-portrait{
-    opacity:1;
-    border-color:var(--accent);
-    box-shadow:0 0 0 1px var(--accent),0 0 22px var(--accent-soft);
-  }
-  .cast-chip-portrait img{width:100%;height:100%;object-fit:contain;display:block;}
-  .cast-chip-name{
+  .roster-card:hover .roster-portrait{opacity:.9;}
+  .roster-card.active .roster-portrait{opacity:1;border-color:var(--gold-line);}
+  .roster-portrait img{width:100%;height:100%;object-fit:contain;display:block;}
+  .roster-text{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1;}
+  .roster-name{
     font-family:var(--font-mono);font-size:var(--step--1);
-    letter-spacing:.06em;text-transform:uppercase;
-    color:var(--text-faint);
+    letter-spacing:.14em;text-transform:uppercase;
+    color:var(--text-muted);
     transition:color .18s ease;
   }
-  .cast-chip.active .cast-chip-name{color:var(--accent);}
+  .roster-card.active .roster-name{color:var(--gold);}
+  .roster-role{
+    font-size:var(--step--1);color:var(--text-faint);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  /* the badge that replaced the Party/NPC/Central tabs */
+  .roster-cadence{
+    flex:none;
+    font-family:var(--font-mono);font-size:9.5px;
+    letter-spacing:.12em;text-transform:uppercase;
+    padding:3px var(--sp-2);
+    border:1px solid currentColor;border-radius:var(--r-pill);
+    white-space:nowrap;
+  }
+  .roster-cadence.daily{color:var(--mastered);}
+  .roster-cadence.capture{color:var(--accent);}
+  .roster-cadence.weekly{color:var(--training);}
+  .roster-cadence.cycle{color:var(--rusty);border-style:dashed;}
 
   /* hero — the big reveal */
   .cast-hero{
@@ -1323,15 +1326,6 @@ button{font-family:inherit;}
     font-size:var(--step-5);font-weight:700;
     letter-spacing:-.01em;line-height:1.02;
     color:var(--text);
-  }
-  .cast-detail-tier{
-    font-family:var(--font-mono);font-size:var(--step--1);
-    letter-spacing:.1em;text-transform:uppercase;
-    padding:var(--sp-1) var(--sp-3);
-    border:1px solid var(--glass-border);
-    border-radius:var(--r-pill);
-    background:var(--accent-soft);
-    color:var(--accent);
   }
   .cast-detail-role{
     font-family:var(--font-mono);font-size:var(--step--1);
@@ -1413,12 +1407,12 @@ button{font-family:inherit;}
   .cast-hero{animation:none;}
   .bar-eased{transition:none;}
   .bar-shine{animation:none;opacity:0;}
-  .tile,.inv-chip,.cast-chip{transition:none;}
+  .tile,.inv-chip,.roster-card{transition:none;}
   .synapse,.neuron,.soma,.nucleus,.axon-label,.halo,.chev{transition:none;}
   .graticule,.core,.planets{transition:none;}
   .tick-ring,.planet-sat{animation:none;}
   .core-spark{animation:none;}
   .synapse.lit{animation:none;stroke-dasharray:none;}
   .neuron.selected .halo{animation:none;}
-  .tile:hover,.inv-chip:hover,.cast-chip:hover{transform:none;}
+  .tile:hover,.inv-chip:hover{transform:none;}
 }

@@ -45,7 +45,7 @@ export default function CharacterPage() {
         <PortraitFx src="/art/character-portrait.png" alt="Character portrait" />
 
         <div className="hero-id">
-          <div className="hero-eyebrow">Mastery Codex // Status Window</div>
+          <div className="hero-eyebrow">Origin System // Navigation</div>
           <h1 className="hero-name">AI Engineering Apprentice</h1>
           <div className="hero-meta">
             <span>{strongest ? `Strongest in ${strongest.subject}` : "No discipline trained yet"}</span>

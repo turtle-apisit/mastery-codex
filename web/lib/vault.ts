@@ -292,9 +292,11 @@ export type Agent = {
   description: string;
   tools: string[];
   tier: AgentTier;
+  cadence: Cadence;
   body: string; // markdown body (role, procedure, output, etc.)
 };
 
+/** Tier survives only because the portrait art is filed under it. */
 const TIER_BY_SLUG: Record<string, AgentTier> = {
   lyra: "Party",
   atlas: "Party",
@@ -303,6 +305,28 @@ const TIER_BY_SLUG: Record<string, AgentTier> = {
   rigel: "Central",
   corvus: "Central",
   antares: "Central",
+};
+
+/**
+ * How often an agent is actually reached for. Taken from the "Use ..." sentence
+ * in each agent's own description — Vega "every day", Antares "only in week 5
+ * of each exam cycle", and so on.
+ *
+ * This replaced Party/NPC/Central as the way the roster is organised. That
+ * split described write-authority, which is an implementation detail; what a
+ * reader of the page wants to know is which of these to reach for today.
+ */
+export const CADENCE_ORDER = ["daily", "capture", "weekly", "cycle"] as const;
+export type Cadence = (typeof CADENCE_ORDER)[number];
+
+const CADENCE_BY_SLUG: Record<string, Cadence> = {
+  vega: "daily",
+  atlas: "daily",
+  lyra: "capture",
+  polaris: "weekly",
+  rigel: "weekly",
+  corvus: "weekly",
+  antares: "cycle",
 };
 
 const SHARED_CONTRACT_HEADING = "## Shared contract";
@@ -342,6 +366,7 @@ export function getAgents(): Agent[] {
           .map((t: string) => t.trim())
           .filter(Boolean),
         tier: TIER_BY_SLUG[slug] ?? "Party",
+        cadence: CADENCE_BY_SLUG[slug] ?? "weekly",
         body,
       };
     });

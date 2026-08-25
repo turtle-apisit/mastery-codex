@@ -5,7 +5,7 @@ import type { Concept } from "@/lib/vault";
 
 /**
  * Level 1 of the star chart: the whole vault as a solar system, one planet per
- * subject, the learner at the centre.
+ * subject, and a star at the centre.
  *
  * Warframe's system view is the reference for the composition. Note what it
  * does NOT do: no lines are drawn between planets — relationships are implied
@@ -278,7 +278,7 @@ export default function SystemView({
           }
         }
 
-        // keep clear of the core so nothing sits on the portrait
+        // keep planets clear of the central star
         const dcx = b.x - cx;
         const dcy = b.y - cy;
         const dc = Math.hypot(dcx, dcy) || 0.001;
@@ -387,21 +387,6 @@ export default function SystemView({
             <stop offset="35%" stopColor="var(--gold)" stopOpacity="0.22" />
             <stop offset="100%" stopColor="var(--gold)" stopOpacity="0" />
           </radialGradient>
-          <linearGradient id="portrait-fade" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#fff" stopOpacity="0.05" />
-            <stop offset="30%" stopColor="#fff" stopOpacity="0.75" />
-            <stop offset="80%" stopColor="#fff" stopOpacity="0.5" />
-            <stop offset="100%" stopColor="#fff" stopOpacity="0" />
-          </linearGradient>
-          <mask id="portrait-mask">
-            <rect
-              x={cx - coreR * 1.6}
-              y={cy - coreR * 2.1}
-              width={coreR * 3.2}
-              height={coreR * 4.2}
-              fill="url(#portrait-fade)"
-            />
-          </mask>
           {specs.map((s) => {
             const id = s.subject.replace(/\W+/g, "-").toLowerCase();
             return (
@@ -428,17 +413,7 @@ export default function SystemView({
           }}
         >
           <circle cx={cx} cy={cy} r={coreR * 3} fill="url(#core-glow)" />
-          <image
-            href="/art/character-portrait.png"
-            x={cx - coreR * 1.15}
-            y={cy - coreR * 1.9}
-            width={coreR * 2.3}
-            height={coreR * 3.4}
-            preserveAspectRatio="xMidYMid meet"
-            mask="url(#portrait-mask)"
-            className="core-portrait"
-          />
-          <circle cx={cx} cy={cy} r={coreR * 0.11} className="core-spark" />
+          <circle cx={cx} cy={cy} r={coreR * 0.16} className="core-spark" />
         </g>
 
         <g
