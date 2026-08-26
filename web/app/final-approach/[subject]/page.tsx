@@ -1,16 +1,32 @@
 import { notFound } from "next/navigation";
 import FinalApproach from "@/components/FinalApproach";
 import { findSubjectEntry } from "@/data/finalApproach/registry";
-import { EXAM_ITEMS, UNITS, EXAM_META } from "@/data/finalApproach/modernSwePrinciples";
+import type { ExamItem, ExamMeta, UnitInfo } from "@/data/finalApproach/types";
+import * as modernSwePrinciples from "@/data/finalApproach/modernSwePrinciples";
+import * as dataScienceEngineering from "@/data/finalApproach/dataScienceEngineering";
+import * as softwareArchitecture from "@/data/finalApproach/softwareArchitecture";
 
-// Only one subject has an exam authored so far. Adding a second means adding
-// its data file next to modernSwePrinciples.ts and a case below — see the
+// One entry per subject that has an exam data file. Adding a fourth means
+// adding its data file, an entry here, and an entry in the registry — see the
 // comment at the top of data/finalApproach/registry.ts.
-const DATA_BY_SLUG: Record<
-  string,
-  { items: typeof EXAM_ITEMS; units: typeof UNITS; meta: typeof EXAM_META }
-> = {
-  "modern-software-engineering-principles": { items: EXAM_ITEMS, units: UNITS, meta: EXAM_META },
+type SubjectExam = { items: ExamItem[]; units: UnitInfo[]; meta: ExamMeta };
+
+const DATA_BY_SLUG: Record<string, SubjectExam> = {
+  "modern-software-engineering-principles": {
+    items: modernSwePrinciples.EXAM_ITEMS,
+    units: modernSwePrinciples.UNITS,
+    meta: modernSwePrinciples.EXAM_META,
+  },
+  "data-science-and-engineering-principles": {
+    items: dataScienceEngineering.EXAM_ITEMS,
+    units: dataScienceEngineering.UNITS,
+    meta: dataScienceEngineering.EXAM_META,
+  },
+  "software-architecture": {
+    items: softwareArchitecture.EXAM_ITEMS,
+    units: softwareArchitecture.UNITS,
+    meta: softwareArchitecture.EXAM_META,
+  },
 };
 
 export function generateStaticParams() {
