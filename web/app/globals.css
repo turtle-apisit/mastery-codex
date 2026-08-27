@@ -1423,6 +1423,28 @@ button{font-family:inherit;}
   }
   .fa-stat-bento{margin-top:var(--sp-2);}
 
+  /* The subject picker reuses .subject-card, which was written for the <div>
+     groups in .inv-groups and so declares no display of its own. A subject with
+     an exam built renders as a <Link>, putting that card on an <a> at the
+     inline default: the box collapses, .cut-sm's clip-path removes what little
+     is left, and the card disappears entirely. Only the not-built-yet cards —
+     plain <div>s — stayed visible. */
+  .fa-subject-list{display:flex;flex-direction:column;gap:var(--sp-3);}
+  .fa-subject-picker-card{
+    display:block;
+    text-decoration:none;color:inherit;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  /* Nothing sits below the head on a picker card, so its divider would read as
+     a stray line across the bottom. */
+  .fa-subject-picker-card .subject-head{border-bottom:0;cursor:inherit;}
+  a.fa-subject-picker-card:hover{
+    border-color:var(--accent);
+    background:color-mix(in oklch, var(--surface-2) 60%, transparent);
+  }
+  a.fa-subject-picker-card:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .fa-subject-picker-card.disabled{opacity:.55;cursor:not-allowed;}
+
   .fa-unit-table-panel h2{margin-bottom:var(--sp-3);}
   .fa-table-wrap{overflow-x:auto;}
   .fa-unit-table{border-collapse:collapse;width:100%;font-size:var(--step--1);}
