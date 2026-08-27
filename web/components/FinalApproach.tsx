@@ -464,7 +464,7 @@ function WrittenCard({
       <p className="fa-item-prompt">{item.prompt}</p>
 
       <textarea
-        className="fa-textarea"
+        className="textarea"
         placeholder="Type your answer here — closed-book, in your own words."
         value={text}
         onChange={(e) => onAnswer({ text: e.target.value })}
