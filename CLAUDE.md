@@ -30,7 +30,7 @@ description a few hyphenated words naming the change:
 ```
 feat/final-approach-data-science-exam
 fix/subject-picker-cards-invisible
-docs/branch-naming-and-ui-verification
+docs/naming-and-ui-verification
 ```
 
 A branch is disposable — it exists for one PR to `main` and gets deleted once
