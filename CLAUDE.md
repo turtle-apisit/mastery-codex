@@ -21,6 +21,38 @@ This holds for everything — a new feature, a one-line fix, a documentation
 change. If you find yourself on `main` with edits in the working tree, stop and
 move them onto a branch before committing.
 
+**Name the branch after what it does, not who is doing it or when.**
+`claude/sawasdee-9m2qj3` says nothing to a reader — not in a PR list, not in
+`git branch`, not six months later. Use `<type>/<short-description>`, the
+type being one of `feat`, `fix`, `docs`, `refactor`, or `chore`, and the
+description a few hyphenated words naming the change:
+
+```
+feat/final-approach-data-science-exam
+fix/subject-picker-cards-invisible
+docs/naming-and-ui-verification
+```
+
+A branch is disposable — it exists for one PR to `main` and gets deleted once
+that PR merges — so optimize the name for the PR list and the diff it will
+carry, not for tracking whose session made it.
+
+## Verify UI changes by looking, not by grepping markup
+
+Grepping the served HTML for the text you expect ("Ready", a component name,
+an item count) proves the *data* reached the page. It proves nothing about
+whether the page is *visible*. `.subject-card` (the class the Final Approach
+picker cards use) had no `display` set, so a card rendered as a `Link` landed
+on an inline anchor and its box collapsed to nothing under `.cut-sm`'s
+`clip-path` — the DOM had the right text, `curl` returned the right markup,
+and the page was blank. That bug shipped and was verified as fixed
+*twice* by grepping HTML before anyone opened the page and looked.
+
+So: after any change to `web/app` or `web/components`, take a screenshot or
+open the page in a real browser before calling it done. `grep`/`curl` on the
+response is fine for confirming a route exists or a build produced *some*
+content — it is never sufficient evidence that a UI change works.
+
 ## Layout
 
 | Path | Holds |
