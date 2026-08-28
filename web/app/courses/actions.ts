@@ -25,11 +25,11 @@ export async function createCourse(formData: FormData) {
   const startDate = optionalString(formData.get("start_date"));
   const endDate = optionalString(formData.get("end_date"));
 
-  if (!name || !startDate || !endDate) {
-    redirect(`/courses/new?error=${encodeURIComponent("Name, start date, and end date are required.")}`);
+  if (!name) {
+    redirect(`/courses/new?error=${encodeURIComponent("Name is required.")}`);
   }
 
-  if (endDate < startDate) {
+  if (startDate && endDate && endDate < startDate) {
     redirect(`/courses/new?error=${encodeURIComponent("End date must be on or after the start date.")}`);
   }
 

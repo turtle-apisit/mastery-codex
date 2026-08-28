@@ -39,7 +39,9 @@ export default async function CoursesPage() {
             <div className="subject-head static">
               <span className="subject-name">{course.name}</span>
               <span className="subject-meta">
-                {course.start_date} – {course.end_date}
+                {course.start_date || course.end_date
+                  ? `${course.start_date ?? "?"} – ${course.end_date ?? "?"}`
+                  : "Dates not set yet"}
               </span>
               {course.is_certified ? (
                 <span className="tag certified">Certified</span>

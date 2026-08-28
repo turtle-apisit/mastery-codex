@@ -90,7 +90,7 @@ export type Database = {
       courses: {
         Row: {
           created_at: string
-          end_date: string
+          end_date: string | null
           final_date: string | null
           final_grade: Database["public"]["Enums"]["grade"] | null
           id: string
@@ -98,11 +98,11 @@ export type Database = {
           midterm_date: string | null
           midterm_grade: Database["public"]["Enums"]["grade"] | null
           name: string
-          start_date: string
+          start_date: string | null
         }
         Insert: {
           created_at?: string
-          end_date: string
+          end_date?: string | null
           final_date?: string | null
           final_grade?: Database["public"]["Enums"]["grade"] | null
           id?: string
@@ -110,11 +110,11 @@ export type Database = {
           midterm_date?: string | null
           midterm_grade?: Database["public"]["Enums"]["grade"] | null
           name: string
-          start_date: string
+          start_date?: string | null
         }
         Update: {
           created_at?: string
-          end_date?: string
+          end_date?: string | null
           final_date?: string | null
           final_grade?: Database["public"]["Enums"]["grade"] | null
           id?: string
@@ -122,7 +122,7 @@ export type Database = {
           midterm_date?: string | null
           midterm_grade?: Database["public"]["Enums"]["grade"] | null
           name?: string
-          start_date?: string
+          start_date?: string | null
         }
         Relationships: []
       }
