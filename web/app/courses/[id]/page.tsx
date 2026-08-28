@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
-import { uploadLectureFile } from "./lecture-files/actions";
+import { uploadLectureFiles } from "./lecture-files/actions";
 
 export default async function CourseDetailPage({
   params,
@@ -61,21 +61,27 @@ export default async function CourseDetailPage({
             <p key={file.id}>
               <a href={urlData.publicUrl} target="_blank" rel="noreferrer">
                 {file.file_name}
-              </a>
+              </a>{" "}
+              {file.techniques_generated ? (
+                <span className="tag mastered">Generated</span>
+              ) : (
+                <span className="tag">Not generated yet</span>
+              )}
             </p>
           );
         })}
 
         <form
-          action={uploadLectureFile.bind(null, course.id)}
+          action={uploadLectureFiles.bind(null, course.id)}
           encType="multipart/form-data"
           className="form-grid"
         >
           <div className="field">
-            <label className="field-label" htmlFor="file">
-              Upload a lecture file
+            <label className="field-label" htmlFor="files">
+              Upload lecture files
             </label>
-            <input className="input" id="file" name="file" type="file" required />
+            <input className="input" id="files" name="files" type="file" multiple required />
+            <span className="field-hint">You can select more than one file at once</span>
           </div>
           <div className="form-actions">
             <button type="submit" className="btn primary">

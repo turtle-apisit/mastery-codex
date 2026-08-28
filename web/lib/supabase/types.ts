@@ -211,6 +211,7 @@ export type Database = {
           file_name: string
           id: string
           storage_path: string
+          techniques_generated: boolean
           uploaded_at: string
         }
         Insert: {
@@ -218,6 +219,7 @@ export type Database = {
           file_name: string
           id?: string
           storage_path: string
+          techniques_generated?: boolean
           uploaded_at?: string
         }
         Update: {
@@ -225,6 +227,7 @@ export type Database = {
           file_name?: string
           id?: string
           storage_path?: string
+          techniques_generated?: boolean
           uploaded_at?: string
         }
         Relationships: [
