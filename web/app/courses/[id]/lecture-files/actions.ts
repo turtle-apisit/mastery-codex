@@ -8,30 +8,34 @@ import { supabase } from "@/lib/supabase/client";
 // row only has course_id, not a subject string.
 const BUCKET = "lecture-files";
 
-export async function uploadLectureFile(courseId: string, formData: FormData) {
-  const file = formData.get("file");
+export async function uploadLectureFiles(courseId: string, formData: FormData) {
+  const files = formData
+    .getAll("files")
+    .filter((f): f is File => f instanceof File && f.size > 0);
 
-  if (!(file instanceof File) || file.size === 0) {
-    redirect(`/courses/${courseId}?error=${encodeURIComponent("Choose a file to upload.")}`);
+  if (files.length === 0) {
+    redirect(`/courses/${courseId}?error=${encodeURIComponent("Choose at least one file to upload.")}`);
   }
 
-  const path = `${courseId}/${file.name}`;
-  const { data: uploadData, error: uploadError } = await supabase.storage
-    .from(BUCKET)
-    .upload(path, file, { upsert: true });
+  for (const file of files) {
+    const path = `${courseId}/${file.name}`;
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from(BUCKET)
+      .upload(path, file, { upsert: true });
 
-  if (uploadError) {
-    redirect(`/courses/${courseId}?error=${encodeURIComponent(uploadError.message)}`);
-  }
+    if (uploadError) {
+      redirect(`/courses/${courseId}?error=${encodeURIComponent(`${file.name}: ${uploadError.message}`)}`);
+    }
 
-  const { error: insertError } = await supabase.from("lecture_files").insert({
-    course_id: courseId,
-    file_name: file.name,
-    storage_path: uploadData.path,
-  });
+    const { error: insertError } = await supabase.from("lecture_files").insert({
+      course_id: courseId,
+      file_name: file.name,
+      storage_path: uploadData.path,
+    });
 
-  if (insertError) {
-    redirect(`/courses/${courseId}?error=${encodeURIComponent(insertError.message)}`);
+    if (insertError) {
+      redirect(`/courses/${courseId}?error=${encodeURIComponent(`${file.name}: ${insertError.message}`)}`);
+    }
   }
 
   revalidatePath(`/courses/${courseId}`);
