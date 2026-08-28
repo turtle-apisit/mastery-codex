@@ -1723,6 +1723,19 @@ button{font-family:inherit;}
   .select{appearance:none;}
   .input:focus-visible,.select:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
 
+  /* The browser's native "Choose File" button ignores color/background on
+     the input itself — it needs its own pseudo-element rule or it renders
+     as a stock light-chrome button inside an otherwise dark control. */
+  .input[type="file"]::file-selector-button{
+    font-family:var(--font-mono);font-size:var(--step--1);
+    text-transform:uppercase;letter-spacing:.08em;
+    color:var(--text-muted);background:transparent;
+    border:1px solid var(--border-strong);border-radius:var(--r-sm);
+    padding:var(--sp-1) var(--sp-3);margin-right:var(--sp-3);
+    cursor:pointer;
+  }
+  .input[type="file"]::file-selector-button:hover{color:var(--text);border-color:var(--glass-border);}
+
   .form-actions{
     display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;margin-top:var(--sp-2);
   }
