@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import { uploadLectureFile } from "./lecture-files/actions";
@@ -21,6 +22,12 @@ export default async function CourseDetailPage({
     .select("*")
     .eq("course_id", id)
     .order("uploaded_at", { ascending: false });
+
+  const { data: sessions } = await supabase
+    .from("class_sessions")
+    .select("*")
+    .eq("course_id", id)
+    .order("session_date", { ascending: false });
 
   return (
     <div className="page">
@@ -78,7 +85,26 @@ export default async function CourseDetailPage({
 
       <section className="panel">
         <h2>Class Sessions</h2>
-        <p className="field-hint">Coming soon.</p>
+        {(!sessions || sessions.length === 0) && (
+          <p className="field-hint">No sessions logged yet.</p>
+        )}
+        {(sessions ?? []).map((session) => (
+          <p key={session.id}>
+            <Link href={`/courses/${course.id}/sessions/${session.id}`}>
+              {session.session_date}
+            </Link>{" "}
+            {session.closed_at ? (
+              <span className="tag mastered">Closed</span>
+            ) : (
+              <span className="tag">Open</span>
+            )}
+          </p>
+        ))}
+        <div className="form-actions">
+          <Link href={`/courses/${course.id}/sessions/new`} className="btn primary">
+            + New Session
+          </Link>
+        </div>
       </section>
     </div>
   );
