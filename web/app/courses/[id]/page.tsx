@@ -1,17 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
-import { uploadLectureFiles } from "./lecture-files/actions";
+import UploadForm from "./lecture-files/UploadForm";
 
 export default async function CourseDetailPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string }>;
 }) {
   const { id } = await params;
-  const { error } = await searchParams;
 
   const { data: course } = await supabase.from("courses").select("*").eq("id", id).single();
 
@@ -48,7 +45,6 @@ export default async function CourseDetailPage({
 
       <section className="panel">
         <h2>Lecture Files</h2>
-        {error && <p className="field-hint error">{error}</p>}
 
         {(!lectureFiles || lectureFiles.length === 0) && (
           <p className="field-hint">No files uploaded yet.</p>
@@ -71,24 +67,7 @@ export default async function CourseDetailPage({
           );
         })}
 
-        <form
-          action={uploadLectureFiles.bind(null, course.id)}
-          encType="multipart/form-data"
-          className="form-grid"
-        >
-          <div className="field">
-            <label className="field-label" htmlFor="files">
-              Upload lecture files
-            </label>
-            <input className="input" id="files" name="files" type="file" multiple required />
-            <span className="field-hint">You can select more than one file at once</span>
-          </div>
-          <div className="form-actions">
-            <button type="submit" className="btn primary">
-              Upload
-            </button>
-          </div>
-        </form>
+        <UploadForm courseId={course.id} />
       </section>
 
       <section className="panel">
