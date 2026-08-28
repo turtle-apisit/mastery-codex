@@ -3,11 +3,22 @@ import AnimatedBar from "@/components/AnimatedBar";
 import AnimatedNum from "@/components/AnimatedNum";
 import PortraitFx from "@/components/PortraitFx";
 import SkillInventory from "@/components/SkillInventory";
+import { supabase } from "@/lib/supabase/client";
 import { getAllConcepts, getCycleInfo, getJobSummaries, getStreak } from "@/lib/vault";
 
-export default function CharacterPage() {
-  const concepts = getAllConcepts();
-  const jobs = getJobSummaries();
+// Read fresh every request — the set of Courses (and therefore which
+// disciplines count as an acquired Skill) can change at any time.
+export const dynamic = "force-dynamic";
+
+export default async function CharacterPage() {
+  const { data: courses } = await supabase.from("courses").select("name");
+  const courseNames = new Set((courses ?? []).map((c) => c.name));
+
+  // Course = Skill: a discipline only shows up as an acquired Skill once a
+  // Course row exists for it, not just because concept notes exist in the
+  // vault.
+  const concepts = getAllConcepts().filter((c) => courseNames.has(c.subject));
+  const jobs = getJobSummaries().filter((j) => courseNames.has(j.subject));
   const cycle = getCycleInfo();
   const streak = getStreak();
 
