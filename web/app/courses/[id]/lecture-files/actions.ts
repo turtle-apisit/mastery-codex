@@ -1,43 +1,28 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { supabase } from "@/lib/supabase/client";
 
-// Mirrors assets/raw-data/<Subject>/<file> one level down: a lecture_files
-// row only has course_id, not a subject string.
-const BUCKET = "lecture-files";
+// Uploading the file itself happens client-side, straight to Supabase
+// Storage — Vercel's platform enforces a request-body ceiling on functions
+// (and the edge in front of them) well below what a real lecture PDF needs,
+// and that ceiling can't be raised from app code. This action only ever
+// receives a few strings, never file bytes, so it never hits that limit.
+export async function recordLectureFile(
+  courseId: string,
+  fileName: string,
+  storagePath: string,
+): Promise<{ error: string | null }> {
+  const { error } = await supabase.from("lecture_files").insert({
+    course_id: courseId,
+    file_name: fileName,
+    storage_path: storagePath,
+  });
 
-export async function uploadLectureFiles(courseId: string, formData: FormData) {
-  const files = formData
-    .getAll("files")
-    .filter((f): f is File => f instanceof File && f.size > 0);
-
-  if (files.length === 0) {
-    redirect(`/courses/${courseId}?error=${encodeURIComponent("Choose at least one file to upload.")}`);
-  }
-
-  for (const file of files) {
-    const path = `${courseId}/${file.name}`;
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from(BUCKET)
-      .upload(path, file, { upsert: true });
-
-    if (uploadError) {
-      redirect(`/courses/${courseId}?error=${encodeURIComponent(`${file.name}: ${uploadError.message}`)}`);
-    }
-
-    const { error: insertError } = await supabase.from("lecture_files").insert({
-      course_id: courseId,
-      file_name: file.name,
-      storage_path: uploadData.path,
-    });
-
-    if (insertError) {
-      redirect(`/courses/${courseId}?error=${encodeURIComponent(`${file.name}: ${insertError.message}`)}`);
-    }
+  if (error) {
+    return { error: error.message };
   }
 
   revalidatePath(`/courses/${courseId}`);
-  redirect(`/courses/${courseId}`);
+  return { error: null };
 }
