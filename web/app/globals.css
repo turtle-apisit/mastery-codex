@@ -1736,6 +1736,21 @@ button{font-family:inherit;}
   }
   .input[type="file"]::file-selector-button:hover{color:var(--text);border-color:var(--glass-border);}
 
+  /* Same idiom as .fa-band-btn/.fa-band-btn.active, but backed by a real
+     checkbox instead of client-side active-class JS, so a multi-select form
+     control keeps working without any script. */
+  .checkbox-pill{
+    display:inline-flex;align-items:center;gap:var(--sp-2);
+    font-family:var(--font-mono);font-size:11px;
+    color:var(--text-muted);background:transparent;
+    border:1px solid var(--border-strong);border-radius:var(--r-pill);
+    padding:var(--sp-2) var(--sp-3);cursor:pointer;
+    transition:color .15s ease,border-color .15s ease,background .15s ease;
+  }
+  .checkbox-pill:hover{color:var(--text);border-color:var(--glass-border);}
+  .checkbox-pill:has(input:checked){color:var(--ground);background:var(--accent);border-color:var(--accent);}
+  .checkbox-pill input{position:absolute;opacity:0;width:0;height:0;}
+
   .form-actions{
     display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;margin-top:var(--sp-2);
   }
