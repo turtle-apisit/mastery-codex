@@ -38,13 +38,15 @@ export default async function NewCoursePage({
             <label className="field-label" htmlFor="start_date">
               Start date
             </label>
-            <input className="input" id="start_date" name="start_date" type="date" required />
+            <input className="input" id="start_date" name="start_date" type="date" />
+            <span className="field-hint">Optional — fill in later if you don&rsquo;t know it yet</span>
           </div>
           <div className="field">
             <label className="field-label" htmlFor="end_date">
               End date
             </label>
-            <input className="input" id="end_date" name="end_date" type="date" required />
+            <input className="input" id="end_date" name="end_date" type="date" />
+            <span className="field-hint">Optional — fill in later if you don&rsquo;t know it yet</span>
           </div>
 
           <div className="field">

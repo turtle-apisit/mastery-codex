@@ -35,7 +35,9 @@ export default async function CourseDetailPage({
         <div className="fa-intro-eyebrow eyebrow">Course</div>
         <h1 className="fa-intro-title">{course.name}</h1>
         <p className="fa-intro-sub">
-          {course.start_date} – {course.end_date}
+          {course.start_date || course.end_date
+            ? `${course.start_date ?? "?"} – ${course.end_date ?? "?"}`
+            : "Dates not set yet"}
         </p>
         {course.is_certified ? (
           <span className="tag certified">Certified</span>
