@@ -1751,6 +1751,13 @@ button{font-family:inherit;}
   .checkbox-pill:has(input:checked){color:var(--ground);background:var(--accent);border-color:var(--accent);}
   .checkbox-pill input{position:absolute;opacity:0;width:0;height:0;}
 
+  /* <summary> is a native, JS-free disclosure toggle — used as the
+     "Add/Edit feedback" affordance so revealing that one field doesn't need
+     a client component. Only the marker needs suppressing to read as a
+     plain .btn. */
+  summary.btn{list-style:none;}
+  summary.btn::-webkit-details-marker{display:none;}
+
   .form-actions{
     display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;margin-top:var(--sp-2);
   }
