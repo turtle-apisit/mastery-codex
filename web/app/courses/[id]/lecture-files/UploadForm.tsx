@@ -7,7 +7,13 @@ import { recordLectureFile } from "./actions";
 
 const BUCKET = "lecture-files";
 
-export default function UploadForm({ courseId }: { courseId: string }) {
+export default function UploadForm({
+  courseId,
+  courseName,
+}: {
+  courseId: string;
+  courseName: string;
+}) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +33,10 @@ export default function UploadForm({ courseId }: { courseId: string }) {
     setError(null);
 
     for (const file of files) {
-      const path = `${courseId}/${file.name}`;
+      // Mirrors assets/raw-data/<Subject>/<file> in the vault, and reads
+      // sanely in the Supabase Storage browser — the course id alone meant
+      // nothing at a glance.
+      const path = `${courseName}/${file.name}`;
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from(BUCKET)
         .upload(path, file, { upsert: true });

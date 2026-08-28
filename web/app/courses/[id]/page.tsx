@@ -67,7 +67,7 @@ export default async function CourseDetailPage({
           );
         })}
 
-        <UploadForm courseId={course.id} />
+        <UploadForm courseId={course.id} courseName={course.name} />
       </section>
 
       <section className="panel">
