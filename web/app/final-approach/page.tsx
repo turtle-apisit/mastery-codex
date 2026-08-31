@@ -2,8 +2,13 @@ import Link from "next/link";
 import { getSubjects } from "@/lib/vault";
 import { FINAL_APPROACH_SUBJECTS, findSubjectEntry } from "@/data/finalApproach/registry";
 
-export default function FinalApproachPage() {
-  const subjects = getSubjects();
+// Subjects now come from the Supabase techniques table, not a static git
+// checkout — read fresh every request instead of baking the list into the
+// build.
+export const dynamic = "force-dynamic";
+
+export default async function FinalApproachPage() {
+  const subjects = await getSubjects();
 
   return (
     <div className="page">
