@@ -26,14 +26,14 @@ Check in order:
 ## 2. The arithmetic — in this order, always
 
 ```
-1. append history entry   (date, activity, delta, result_note)
+1. insert technique_history row   (technique_id, date, activity, delta, result, note)
 2. score  = clamp(0, 100, previous_score + delta)
-3. status = f(score)      ← from the new cumulative score, never from this one result
+3. update techniques set score = <new score>   ← status follows automatically, see below
 4. last_reviewed = activity date   (except activity: capture)
 5. append scorecard row
 ```
 
-**Status is a pure function of cumulative score:**
+**Status is a pure function of cumulative score** — a Postgres generated column on `techniques`, not a value you set:
 
 | Score | Status |
 |---|---|
@@ -41,9 +41,9 @@ Check in order:
 | 40–79 | `training` |
 | 80–100 | `mastered` |
 
-Never set status from the feel of a single answer. One brilliant answer on a 20-point concept does not make it `training`; the arithmetic decides, and the arithmetic is the whole point of keeping a cumulative score.
+You never write `status` at all; you write `score` and the database derives it. That's a stronger guarantee than the old discipline of "never set status from the feel of a single answer" — it's no longer possible to set it from anything but the cumulative score, because there's no column to set.
 
-`locked` is **not** a status you write. It is derived at read time from the prerequisite graph — a concept is locked while any prerequisite is below 40. If a note has `status: locked` stored in it, that's a bug to flag, not a value to maintain.
+`locked` is **not** a status stored anywhere. It is derived at read time from the prerequisite graph — a concept is locked while any prerequisite is below 40.
 
 ### Clamping
 Clamp silently in the data, loudly in the summary. `score: 96, delta: +15` → stores 100, and the summary says `clamped +15 → +4 (ceiling)`. The lost delta matters to Corvus's calibration audit; swallowing it hides that grading has drifted generous near the ceiling.
@@ -55,9 +55,9 @@ Same at the floor: `score: 3, delta: −10` → stores 0, summary says `clamped 
 
 ## 3. Append-only means append-only
 
-The history is an audit log, not a state field.
+The history is an audit log, not a state field. `technique_history` enforces this at the database level — an `update` or `delete` against it is rejected outright, not just discouraged.
 
-- **Never edit or delete a past entry.** A wrong entry is corrected by appending a correcting entry with a `result_note` explaining the correction — never by rewriting history.
+- **Never edit or delete a past entry.** A wrong entry is corrected by appending a correcting entry with a `note` explaining the correction — never by rewriting history (and the database won't let you anyway).
 - **Two handoffs, same concept, same day → two entries.** Never merge deltas. The sequence *is* the information: `+15 then −8` and `+7` produce the same score and mean completely different things.
 - **Order within a day follows arrival order.** Don't sort by activity type.
 - **Never backfill a date.** If a result arrives late, log it today with the real activity date in the note.
@@ -87,7 +87,7 @@ The `note` column carries the activity kind plus the delta plus any flag:
 2026-08-25 | Backpropagation   | mastered   | 100 | exam, +4 (clamped from +15)
 ```
 
-Never skip the row. The concept note holds the current state; the scorecard is the **trend**, and trend is what Polaris ranks on and Corvus audits. A note updated without its row is an invisible change.
+Never skip the row. The Technique row holds the current state; the scorecard is the **trend**, and trend is what Polaris ranks on and Corvus audits. A score updated without its row is an invisible change.
 
 One row per history entry. Never one summarizing row per day.
 

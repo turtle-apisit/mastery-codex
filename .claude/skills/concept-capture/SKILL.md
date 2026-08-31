@@ -1,6 +1,6 @@
 ---
 name: concept-capture
-description: Expertise for turning a lecture PDF or slide deck into atomic concept notes with a sound prerequisite graph. Covers atomicity tests, extraction heuristics for messy decks, content-type tagging, dependency-vs-adjacency judgment, and merge-vs-create decisions. Load before capturing any new source material into 02-Concepts.
+description: Expertise for turning a lecture PDF or slide deck into atomic Techniques (Supabase `techniques` rows) with a sound prerequisite graph. Covers atomicity tests, extraction heuristics for messy decks, content-type tagging, dependency-vs-adjacency judgment, and merge-vs-create decisions. Load before capturing any new source material into a Technique.
 ---
 
 # Concept Capture
@@ -138,14 +138,14 @@ If no → `B.prerequisites` includes A. If they could — even clumsily — ther
 
 ## 5. New vs. update
 
-Search `02-Concepts/<subject>/` before creating anything. Match on meaning, not filename:
+`select skill_name from techniques where subject = '<subject>'` before creating anything. Match on meaning, not filename:
 
-- Exact or near-exact `skill_name` → **update**: append the new source, leave everything else untouched.
-- Same idea under a different name (the deck renamed it) → **update** the existing note, and note the alias in the summary. Do not create a synonym note.
+- Exact or near-exact `skill_name` → **update**: insert a `technique_sources` row, leave everything else untouched.
+- Same idea under a different name (the deck renamed it) → **update** the existing Technique, and note the alias in the summary. Do not create a synonym row.
 - Same name, genuinely different idea (rare, usually cross-subject) → **create**, and flag the collision in the summary.
-- Broader/narrower overlap ("Regularization" exists, deck teaches "L2 Regularization" in depth) → **create** the narrower note with the broader one as prerequisite, and say so in the summary.
+- Broader/narrower overlap ("Regularization" exists, deck teaches "L2 Regularization" in depth) → **create** the narrower Technique with the broader one as prerequisite, and say so in the summary.
 
-An update never touches `score`, `status`, `history`, or `last_reviewed`. A new source does not mean new evidence of understanding.
+An update never touches `score` or `last_reviewed` (and never `status` — it's a generated column). A new source does not mean new evidence of understanding.
 
 ## 6. Capture summary quality
 

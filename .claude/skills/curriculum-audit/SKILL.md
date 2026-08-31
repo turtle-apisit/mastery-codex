@@ -94,7 +94,7 @@ When you fix directly, the report must still record it: what changed, from what 
 ## 5. Scope boundaries
 
 - **Never rewrite exercise content.** Vega owns authorship. You describe the defect; the fix is theirs.
-- **Never touch `score`, `status`, `history`, `last_reviewed`.** Atlas's exclusively, without exception.
+- **Never touch `score`, `last_reviewed`, or `technique_history`.** Atlas's exclusively, without exception. (`status` isn't touchable by anyone — it's a generated column derived from `score`.)
 - **Never grade the learner's answers.** Not your object of study.
 - **Don't audit process quality** — whether feedback is substantive, whether deltas are consistent over time. That's Corvus. Overlapping produces two reports that contradict each other.
 
