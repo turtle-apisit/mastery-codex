@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { getSubjects } from "@/lib/vault";
+import { getSubjects } from "@/lib/techniques";
 import { FINAL_APPROACH_SUBJECTS, findSubjectEntry } from "@/data/finalApproach/registry";
 
-export default function FinalApproachPage() {
-  const subjects = getSubjects();
+export default async function FinalApproachPage() {
+  const subjects = await getSubjects();
 
   return (
     <div className="page">

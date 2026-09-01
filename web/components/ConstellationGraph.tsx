@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { Concept } from "@/lib/vault";
+import type { Concept } from "@/lib/techniques";
 import { buildClusterLayout } from "@/lib/clusterGraph";
 import { useViewport } from "@/lib/useViewport";
 
