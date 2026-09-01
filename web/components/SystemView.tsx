@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import type { Concept } from "@/lib/vault";
+import type { Concept } from "@/lib/techniques";
 
 /**
  * Level 1 of the star chart: the whole vault as a solar system, one planet per

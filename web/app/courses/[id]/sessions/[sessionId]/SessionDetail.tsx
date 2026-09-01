@@ -3,7 +3,8 @@
 import { notFound, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
-import type { Concept } from "@/lib/vault";
+import { getAllConcepts } from "@/lib/techniques";
+import type { Concept } from "@/lib/techniques";
 import type { Tables } from "@/lib/supabase/types";
 
 type ClassSession = Tables<"class_sessions">;
@@ -23,11 +24,12 @@ function requiredString(value: FormDataEntryValue | null): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
-export default function SessionDetail({ allConcepts }: { allConcepts: Concept[] }) {
+export default function SessionDetail() {
   const { id: courseId, sessionId } = useParams<{ id: string; sessionId: string }>();
 
   const [session, setSession] = useState<ClassSession | null | undefined>(undefined);
   const [courseName, setCourseName] = useState<string | null>(null);
+  const [techniques, setTechniques] = useState<Concept[]>([]);
   const [referencedFiles, setReferencedFiles] = useState<LectureFileRef[]>([]);
   const [digest, setDigest] = useState<Digest | null>(null);
   const [assignedHomework, setAssignedHomework] = useState<AssignedHomework[]>([]);
@@ -45,6 +47,8 @@ export default function SessionDetail({ allConcepts }: { allConcepts: Concept[] 
     if (!sessionData) return { session: null } as const;
 
     const { data: courseData } = await supabase.from("courses").select("name").eq("id", courseId).single();
+    const allConcepts = await getAllConcepts();
+    const techniques = courseData ? allConcepts.filter((c) => c.subject === courseData.name) : [];
 
     const { data: sessionFileLinks } = await supabase
       .from("session_files")
@@ -78,6 +82,7 @@ export default function SessionDetail({ allConcepts }: { allConcepts: Concept[] 
     return {
       session: sessionData,
       courseName: courseData?.name ?? null,
+      techniques,
       referencedFiles: files ?? [],
       digest: digestData ?? null,
       assignedHomework: assigned ?? [],
@@ -89,6 +94,7 @@ export default function SessionDetail({ allConcepts }: { allConcepts: Concept[] 
     setSession(result.session);
     if (!result.session) return;
     setCourseName(result.courseName);
+    setTechniques(result.techniques);
     setReferencedFiles(result.referencedFiles);
     setDigest(result.digest);
     setAssignedHomework(result.assignedHomework);
@@ -105,6 +111,7 @@ export default function SessionDetail({ allConcepts }: { allConcepts: Concept[] 
       setSession(result.session);
       if (!result.session) return;
       setCourseName(result.courseName);
+      setTechniques(result.techniques);
       setReferencedFiles(result.referencedFiles);
       setDigest(result.digest);
       setAssignedHomework(result.assignedHomework);
@@ -112,8 +119,6 @@ export default function SessionDetail({ allConcepts }: { allConcepts: Concept[] 
     }
     run();
   }, [courseId, sessionId]);
-
-  const techniques = courseName ? allConcepts.filter((c) => c.subject === courseName) : [];
 
   async function handleSaveDigest(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

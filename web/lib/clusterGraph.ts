@@ -1,4 +1,4 @@
-import type { Concept } from "./vault";
+import type { Concept } from "./techniques";
 import { buildGraph, type SubjectGraph } from "./skillGraph";
 
 /**

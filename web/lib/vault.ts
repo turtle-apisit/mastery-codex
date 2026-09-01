@@ -2,180 +2,11 @@ import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
 
-// The web app lives in web/, the vault (concept notes, exercises, agents,
-// art) lives one level up at the repo root.
+// The web app lives in web/, the vault (exercises, reviews, agents, art)
+// lives one level up at the repo root. Concept notes (Techniques) no longer
+// live here as markdown — see lib/techniques.ts, which reads them from
+// Supabase instead.
 const VAULT_ROOT = path.join(process.cwd(), "..");
-
-export type Status = "untrained" | "training" | "mastered";
-
-export type HistoryEntry = {
-  date: string;
-  activity: "capture" | "exercise" | "essay" | "quiz" | "exam" | "rust-check";
-  delta: number;
-  result: number;
-  note?: string;
-};
-
-export type Concept = {
-  subject: string;
-  skill_name: string;
-  slug: string;
-  score: number;
-  prerequisites: string[];
-  source: string[];
-  /** optional display name for the lecture group this note belongs to */
-  unit: string | null;
-  last_reviewed: string | null;
-  history: HistoryEntry[];
-  // derived
-  status: Status;
-  locked: boolean;
-  rusty: boolean;
-};
-
-function slugify(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
-
-export function deriveStatus(score: number): Status {
-  if (score >= 80) return "mastered";
-  if (score >= 40) return "training";
-  return "untrained";
-}
-
-/**
- * A concept is "rusty" when it has logged a real decay event (a peak score
- * that's dropped 10+ points from where it once was) — not from comparing
- * last_reviewed against wall-clock "now", which would silently flag more
- * and more of the vault as rusty the longer the seed data goes untouched,
- * regardless of whether Atlas ever actually logged a rust-check. Polaris is
- * the one that watches the calendar and decides when to log a fresh
- * rust-check; this just reflects what's already been logged.
- */
-function isRusty(concept: {
-  score: number;
-  history: HistoryEntry[];
-}): boolean {
-  const peak = concept.history.reduce(
-    (m, h) => Math.max(m, h.result),
-    concept.score
-  );
-  return peak - concept.score >= 10;
-}
-
-function readConceptFile(filePath: string): Omit<
-  Concept,
-  "status" | "locked" | "rusty"
-> {
-  const raw = fs.readFileSync(filePath, "utf-8");
-  const { data } = matter(raw);
-  return {
-    subject: data.subject,
-    skill_name: data.skill_name,
-    slug: slugify(data.skill_name),
-    score: data.score ?? 0,
-    prerequisites: data.prerequisites ?? [],
-    source: data.source ?? [],
-    unit: data.unit ?? null,
-    last_reviewed: data.last_reviewed ?? null,
-    history: data.history ?? [],
-  };
-}
-
-/** Reads every concept note in the vault and derives status/locked/rusty. */
-export function getAllConcepts(): Concept[] {
-  const conceptsDir = path.join(VAULT_ROOT, "02-Concepts");
-  if (!fs.existsSync(conceptsDir)) return [];
-
-  const files: string[] = [];
-  for (const subject of fs.readdirSync(conceptsDir)) {
-    const subjectDir = path.join(conceptsDir, subject);
-    if (!fs.statSync(subjectDir).isDirectory()) continue;
-    for (const f of fs.readdirSync(subjectDir)) {
-      if (f.endsWith(".md")) files.push(path.join(subjectDir, f));
-    }
-  }
-
-  const raw = files.map(readConceptFile);
-  const byName = new Map(raw.map((c) => [c.skill_name, c]));
-
-  return raw.map((c) => {
-    const status = deriveStatus(c.score);
-    const locked = c.prerequisites.some((p) => {
-      const prereq = byName.get(p);
-      return !prereq || prereq.score < 40;
-    });
-    const rusty = isRusty(c);
-    return { ...c, status, locked, rusty };
-  });
-}
-
-export function getSubjects(): string[] {
-  const conceptsDir = path.join(VAULT_ROOT, "02-Concepts");
-  if (!fs.existsSync(conceptsDir)) return [];
-  return fs
-    .readdirSync(conceptsDir)
-    .filter((f) => fs.statSync(path.join(conceptsDir, f)).isDirectory());
-}
-
-export type JobSummary = {
-  subject: string;
-  level: number;
-  xpPct: number;
-  mastered: number;
-  training: number;
-  untrained: number;
-  locked: number;
-  rusty: number;
-  total: number;
-};
-
-export function getJobSummaries(): JobSummary[] {
-  const all = getAllConcepts();
-  const subjects = Array.from(new Set(all.map((c) => c.subject)));
-
-  return subjects.map((subject) => {
-    const concepts = all.filter((c) => c.subject === subject);
-    const scored = concepts.filter((c) => !c.locked);
-    const avgScore = scored.length
-      ? scored.reduce((s, c) => s + c.score, 0) / scored.length
-      : 0;
-    const level = Math.floor(avgScore / 10);
-
-    let mastered = 0,
-      training = 0,
-      untrained = 0,
-      locked = 0,
-      rusty = 0;
-    // status is one of three buckets; rusty and locked are flags layered on
-    // top, so a Training-and-rusty concept counts in BOTH training and rusty.
-    // These figures deliberately sum to more than `total` — they measure two
-    // different axes, and collapsing them into one bucket made the training
-    // count silently exclude exactly the concepts most in need of work.
-    for (const c of concepts) {
-      if (c.status === "mastered") mastered++;
-      else if (c.status === "training") training++;
-      else untrained++;
-      if (c.locked) locked++;
-      if (c.rusty) rusty++;
-    }
-
-    return {
-      subject,
-      level,
-      xpPct: Math.round(avgScore),
-      mastered,
-      training,
-      untrained,
-      locked,
-      rusty,
-      total: concepts.length,
-    };
-  });
-}
 
 export type Exercise = {
   subject: string;
@@ -206,22 +37,6 @@ export function getExercises(): Exercise[] {
         date: data.date,
       };
     });
-}
-
-export type LogEntry = HistoryEntry & { subject: string; concept: string };
-
-/** Flattens every concept's history into one reverse-chronological feed. */
-export function getQuestLog(): LogEntry[] {
-  const all = getAllConcepts();
-  const entries: LogEntry[] = [];
-  for (const c of all) {
-    for (const h of c.history) {
-      entries.push({ ...h, subject: c.subject, concept: c.skill_name });
-    }
-  }
-  return entries.sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
 }
 
 export type CycleInfo = {
@@ -259,29 +74,6 @@ export function getCycleInfo(): CycleInfo {
     bossPrep: week === lengthWeeks - 1,
     daysUntilBossPrep,
   };
-}
-
-/** Counts the current daily-activity streak, backward from the most recent
- * logged activity (not necessarily "today" — the seed vault's most recent
- * activity is what anchors it). */
-export function getStreak(): number {
-  const dates = Array.from(
-    new Set(getQuestLog().map((e) => e.date))
-  ).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
-  if (!dates.length) return 0;
-
-  let streak = 1;
-  for (let i = 0; i < dates.length - 1; i++) {
-    const cur = new Date(dates[i]).getTime();
-    const next = new Date(dates[i + 1]).getTime();
-    if (Math.round((cur - next) / 86400000) <= 3) {
-      // allow weekend/light-day gaps up to 3 days apart
-      streak++;
-    } else {
-      break;
-    }
-  }
-  return streak;
 }
 
 export type AgentTier = "Party" | "NPC" | "Central";

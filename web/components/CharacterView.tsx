@@ -7,39 +7,46 @@ import AnimatedNum from "@/components/AnimatedNum";
 import PortraitFx from "@/components/PortraitFx";
 import SkillInventory from "@/components/SkillInventory";
 import { supabase } from "@/lib/supabase/client";
-import type { Concept, CycleInfo, JobSummary } from "@/lib/vault";
+import { getAllConcepts, getJobSummaries, getStreak } from "@/lib/techniques";
+import type { Concept, JobSummary } from "@/lib/techniques";
+import type { CycleInfo } from "@/lib/vault";
 
-export default function CharacterView({
-  concepts: allConcepts,
-  jobs: allJobs,
-  cycle,
-  streak,
-}: {
+type LoadedData = {
   concepts: Concept[];
   jobs: JobSummary[];
-  cycle: CycleInfo;
   streak: number;
-}) {
-  const [courseNames, setCourseNames] = useState<Set<string> | null>(null);
+};
+
+export default function CharacterView({ cycle }: { cycle: CycleInfo }) {
+  const [loaded, setLoaded] = useState<LoadedData | null>(null);
 
   useEffect(() => {
     async function load() {
       try {
-        const { data } = await supabase.from("courses").select("name");
-        setCourseNames(new Set((data ?? []).map((c) => c.name)));
+        const [{ data: courses }, allConcepts, allJobs, streak] = await Promise.all([
+          supabase.from("courses").select("name"),
+          getAllConcepts(),
+          getJobSummaries(),
+          getStreak(),
+        ]);
+        // Course = Skill: a discipline only shows up as an acquired Skill
+        // once a Course row exists for it, not just because Techniques exist.
+        const courseNames = new Set((courses ?? []).map((c) => c.name));
+        setLoaded({
+          concepts: allConcepts.filter((c) => courseNames.has(c.subject)),
+          jobs: allJobs.filter((j) => courseNames.has(j.subject)),
+          streak,
+        });
       } catch {
-        setCourseNames(new Set());
+        setLoaded({ concepts: [], jobs: [], streak: 0 });
       }
     }
     load();
   }, []);
 
-  // Course = Skill: a discipline only shows up as an acquired Skill once a
-  // Course row exists for it, not just because concept notes exist in the
-  // vault.
-  const concepts =
-    courseNames === null ? [] : allConcepts.filter((c) => courseNames.has(c.subject));
-  const jobs = courseNames === null ? [] : allJobs.filter((j) => courseNames.has(j.subject));
+  const concepts = loaded?.concepts ?? [];
+  const jobs = loaded?.jobs ?? [];
+  const streak = loaded?.streak ?? 0;
 
   const unlocked = concepts.filter((c) => !c.locked);
   const totalXp = unlocked.reduce((s, c) => s + c.score, 0);
