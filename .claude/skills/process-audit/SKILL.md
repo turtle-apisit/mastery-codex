@@ -68,13 +68,14 @@ Flag:
 Verify the invariants on a few sampled concepts:
 
 1. `score` = clamp(0,100, sum of history deltas)
-2. `status` matches the score band (0–39 / 40–79 / 80+)
-3. every history entry has a scorecard row
-4. `last_reviewed` = date of the most recent non-`capture`, non-`rust-check` entry
-5. no rust-check advanced `last_reviewed`
-6. same-day results logged as separate entries, not merged
+2. every history entry has a scorecard row
+3. `last_reviewed` = date of the most recent non-`capture`, non-`rust-check` entry
+4. no rust-check advanced `last_reviewed`
+5. same-day results logged as separate entries, not merged
 
-Violations of 1 or 2 usually mean a **missing** entry rather than bad arithmetic — say that, and never "correct" the total to match. Overwriting the score destroys the evidence needed to find the missing entry.
+(`status` isn't worth checking separately — it's a Postgres generated column derived from `score`, so it can't drift from its band on its own. If it ever looks wrong, `score` is the thing to investigate.)
+
+A violation of 1 usually means a **missing** entry rather than bad arithmetic — say that, and never "correct" the total to match. Overwriting the score destroys the evidence needed to find the missing entry.
 
 ## 6. Pattern vs. incident
 
@@ -91,9 +92,8 @@ This threshold is what keeps the audit trustworthy. An auditor who escalates eve
 ## 7. Small-fixable boundary
 
 **Fix directly** — mechanical, unambiguous, one right answer:
-- a missing history entry that the scorecard proves should exist (append retroactively, note that it was retroactive),
+- a missing `technique_history` row that the scorecard proves should exist (insert it retroactively, note that it was retroactive),
 - a missing scorecard row for an existing history entry,
-- a status that doesn't match its own score band,
 - an obviously wrong time estimate (essay marked 12 min).
 
 **Report only** — anything requiring judgment:
