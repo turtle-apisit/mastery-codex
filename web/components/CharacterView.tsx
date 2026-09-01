@@ -59,14 +59,6 @@ export default function CharacterView({
     return "";
   });
 
-  if (courseNames === null) {
-    return (
-      <div className="page">
-        <p className="field-hint">Loading…</p>
-      </div>
-    );
-  }
-
   return (
     <div className="page">
       <section className="hero cut" id="character">
