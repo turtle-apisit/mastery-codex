@@ -1,15 +1,29 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
+import type { Tables } from "@/lib/supabase/types";
 
-// This list changes whenever a course is created — always read current data
-// rather than serving a build-time static snapshot.
-export const dynamic = "force-dynamic";
+type Course = Tables<"courses">;
 
-export default async function CoursesPage() {
-  const { data: courses } = await supabase
-    .from("courses")
-    .select("*")
-    .order("start_date", { ascending: false });
+export default function CoursesPage() {
+  const [courses, setCourses] = useState<Course[] | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const { data } = await supabase
+          .from("courses")
+          .select("*")
+          .order("start_date", { ascending: false });
+        setCourses(data ?? []);
+      } catch {
+        setCourses([]);
+      }
+    }
+    load();
+  }, []);
 
   return (
     <div className="page">
@@ -27,7 +41,8 @@ export default async function CoursesPage() {
       </section>
 
       <section className="fa-subject-list">
-        {(!courses || courses.length === 0) && (
+        {courses === null && <p className="field-hint">Loading…</p>}
+        {courses !== null && courses.length === 0 && (
           <p className="field-hint">No courses yet — add your first one.</p>
         )}
         {(courses ?? []).map((course) => (
