@@ -1,9 +1,11 @@
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
+import { supabase } from "@/lib/supabase/client";
 
-// The web app lives in web/, the vault (concept notes, exercises, agents,
-// art) lives one level up at the repo root.
+// The web app lives in web/, the rest of the vault (exercises, reviews,
+// agents, art) lives one level up at the repo root. Concept notes
+// (Techniques) no longer live here — they're Supabase rows, read below.
 const VAULT_ROOT = path.join(process.cwd(), "..");
 
 export type Status = "untrained" | "training" | "mastered";
@@ -33,13 +35,6 @@ export type Concept = {
   rusty: boolean;
 };
 
-function slugify(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
-
 export function deriveStatus(score: number): Status {
   if (score >= 80) return "mastered";
   if (score >= 40) return "training";
@@ -66,59 +61,79 @@ function isRusty(concept: {
   return peak - concept.score >= 10;
 }
 
-function readConceptFile(filePath: string): Omit<
-  Concept,
-  "status" | "locked" | "rusty"
-> {
-  const raw = fs.readFileSync(filePath, "utf-8");
-  const { data } = matter(raw);
-  return {
-    subject: data.subject,
-    skill_name: data.skill_name,
-    slug: slugify(data.skill_name),
-    score: data.score ?? 0,
-    prerequisites: data.prerequisites ?? [],
-    source: data.source ?? [],
-    unit: data.unit ?? null,
-    last_reviewed: data.last_reviewed ?? null,
-    history: data.history ?? [],
-  };
-}
+/**
+ * Reads every Technique (concept note) from Supabase and derives
+ * status/locked/rusty. Techniques used to be `02-Concepts/**\/*.md` files;
+ * they now live in the `techniques`/`technique_sources`/
+ * `technique_prerequisites`/`technique_history` tables (mastery-codex-db).
+ */
+export async function getAllConcepts(): Promise<Concept[]> {
+  const [{ data: techniques }, { data: sources }, { data: prereqs }, { data: history }] =
+    await Promise.all([
+      supabase.from("techniques").select("*"),
+      supabase.from("technique_sources").select("*"),
+      supabase.from("technique_prerequisites").select("*"),
+      supabase.from("technique_history").select("*").order("date", { ascending: true }),
+    ]);
 
-/** Reads every concept note in the vault and derives status/locked/rusty. */
-export function getAllConcepts(): Concept[] {
-  const conceptsDir = path.join(VAULT_ROOT, "02-Concepts");
-  if (!fs.existsSync(conceptsDir)) return [];
+  const skillNameById = new Map((techniques ?? []).map((t) => [t.id, t.skill_name]));
 
-  const files: string[] = [];
-  for (const subject of fs.readdirSync(conceptsDir)) {
-    const subjectDir = path.join(conceptsDir, subject);
-    if (!fs.statSync(subjectDir).isDirectory()) continue;
-    for (const f of fs.readdirSync(subjectDir)) {
-      if (f.endsWith(".md")) files.push(path.join(subjectDir, f));
-    }
+  const sourcesById = new Map<string, string[]>();
+  for (const s of sources ?? []) {
+    const list = sourcesById.get(s.technique_id) ?? [];
+    list.push(s.source_file);
+    sourcesById.set(s.technique_id, list);
   }
 
-  const raw = files.map(readConceptFile);
+  const prereqNamesById = new Map<string, string[]>();
+  for (const p of prereqs ?? []) {
+    const name = skillNameById.get(p.prerequisite_id);
+    if (!name) continue;
+    const list = prereqNamesById.get(p.technique_id) ?? [];
+    list.push(name);
+    prereqNamesById.set(p.technique_id, list);
+  }
+
+  const historyById = new Map<string, HistoryEntry[]>();
+  for (const h of history ?? []) {
+    const list = historyById.get(h.technique_id) ?? [];
+    list.push({
+      date: h.date,
+      activity: h.activity as HistoryEntry["activity"],
+      delta: h.delta,
+      result: h.result,
+      note: h.note ?? undefined,
+    });
+    historyById.set(h.technique_id, list);
+  }
+
+  const raw = (techniques ?? []).map((t) => ({
+    subject: t.subject,
+    skill_name: t.skill_name,
+    slug: t.slug,
+    score: t.score,
+    prerequisites: prereqNamesById.get(t.id) ?? [],
+    source: sourcesById.get(t.id) ?? [],
+    unit: t.unit,
+    last_reviewed: t.last_reviewed,
+    history: historyById.get(t.id) ?? [],
+    status: (t.status as Status | null) ?? deriveStatus(t.score),
+  }));
   const byName = new Map(raw.map((c) => [c.skill_name, c]));
 
   return raw.map((c) => {
-    const status = deriveStatus(c.score);
     const locked = c.prerequisites.some((p) => {
       const prereq = byName.get(p);
       return !prereq || prereq.score < 40;
     });
     const rusty = isRusty(c);
-    return { ...c, status, locked, rusty };
+    return { ...c, locked, rusty };
   });
 }
 
-export function getSubjects(): string[] {
-  const conceptsDir = path.join(VAULT_ROOT, "02-Concepts");
-  if (!fs.existsSync(conceptsDir)) return [];
-  return fs
-    .readdirSync(conceptsDir)
-    .filter((f) => fs.statSync(path.join(conceptsDir, f)).isDirectory());
+export async function getSubjects(): Promise<string[]> {
+  const { data } = await supabase.from("techniques").select("subject");
+  return Array.from(new Set((data ?? []).map((t) => t.subject)));
 }
 
 export type JobSummary = {
@@ -133,8 +148,8 @@ export type JobSummary = {
   total: number;
 };
 
-export function getJobSummaries(): JobSummary[] {
-  const all = getAllConcepts();
+export async function getJobSummaries(): Promise<JobSummary[]> {
+  const all = await getAllConcepts();
   const subjects = Array.from(new Set(all.map((c) => c.subject)));
 
   return subjects.map((subject) => {
@@ -211,8 +226,8 @@ export function getExercises(): Exercise[] {
 export type LogEntry = HistoryEntry & { subject: string; concept: string };
 
 /** Flattens every concept's history into one reverse-chronological feed. */
-export function getQuestLog(): LogEntry[] {
-  const all = getAllConcepts();
+export async function getQuestLog(): Promise<LogEntry[]> {
+  const all = await getAllConcepts();
   const entries: LogEntry[] = [];
   for (const c of all) {
     for (const h of c.history) {
@@ -264,9 +279,10 @@ export function getCycleInfo(): CycleInfo {
 /** Counts the current daily-activity streak, backward from the most recent
  * logged activity (not necessarily "today" — the seed vault's most recent
  * activity is what anchors it). */
-export function getStreak(): number {
+export async function getStreak(): Promise<number> {
+  const questLog = await getQuestLog();
   const dates = Array.from(
-    new Set(getQuestLog().map((e) => e.date))
+    new Set(questLog.map((e) => e.date))
   ).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
   if (!dates.length) return 0;
 

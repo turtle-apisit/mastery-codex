@@ -32,7 +32,7 @@ export default async function SessionDetailPage({
 
   const { data: course } = await supabase.from("courses").select("name").eq("id", courseId).single();
   const techniques = course
-    ? getAllConcepts().filter((c) => c.subject === course.name)
+    ? (await getAllConcepts()).filter((c) => c.subject === course.name)
     : [];
 
   const { data: sessionFileLinks } = await supabase

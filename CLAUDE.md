@@ -1,7 +1,11 @@
 # Mastery Codex
 
-A study vault — course material captured as atomic concept notes with a
-prerequisite graph — plus a Next.js app that reads the vault and renders it.
+A study vault — course material captured as atomic concept notes ("Techniques")
+with a prerequisite graph — plus a Next.js app that reads the vault and
+renders it. Techniques live in Supabase (`mastery-codex-db`, table
+`techniques` plus `technique_sources`/`technique_prerequisites`/
+`technique_history`), not as markdown files; everything else in the vault
+(exercises, reviews, agents, art) is still plain files in this repo.
 
 ## Git workflow
 
@@ -57,7 +61,7 @@ content — it is never sufficient evidence that a UI change works.
 
 | Path | Holds |
 |---|---|
-| `02-Concepts/<Subject>/` | Atomic concept notes, one idea each, with YAML front matter carrying `score`, `prerequisites`, `source`, and an append-only `history` |
+| Supabase `techniques` table | Atomic concept notes, one idea each — `subject`, `skill_name`, `slug`, `score`, `status` (generated from `score`), `unit`, `content_type`, `last_reviewed`. `technique_sources` holds each note's source deck filenames, `technique_prerequisites` its prerequisite edges (by id, not name), `technique_history` its append-only (DB-enforced) grading log. No longer markdown-in-git — see `web/lib/vault.ts` for the read path and `.claude/skills/concept-capture/SKILL.md` for how a note is created/updated |
 | `03-Reviews/cycle-log.md` | The study cycle log |
 | `SOURCES.md` | What is in `assets/raw-data/`, what it became, and what it deliberately did not |
 | `assets/art/` | Tracked images used by the app |

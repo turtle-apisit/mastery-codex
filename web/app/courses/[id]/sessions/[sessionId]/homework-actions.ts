@@ -70,9 +70,19 @@ export async function addGeneratedHomework(courseId: string, sessionId: string, 
     );
   }
 
+  // The picker's value is the Technique's slug; resolve it to the real
+  // Supabase id so this row carries a proper technique_id FK, not just a
+  // free-text copy of the name.
+  const { data: technique } = await supabase
+    .from("techniques")
+    .select("id, skill_name")
+    .eq("slug", techniqueName)
+    .maybeSingle();
+
   const { error } = await supabase.from("generated_homework").insert({
     session_id: sessionId,
-    technique_name: techniqueName,
+    technique_id: technique?.id ?? null,
+    technique_name: technique?.skill_name ?? techniqueName,
     question,
     user_answer: userAnswer,
     is_correct: isCorrectRaw === "true",

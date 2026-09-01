@@ -17,10 +17,11 @@ export default async function CharacterPage() {
   // Course = Skill: a discipline only shows up as an acquired Skill once a
   // Course row exists for it, not just because concept notes exist in the
   // vault.
-  const concepts = getAllConcepts().filter((c) => courseNames.has(c.subject));
-  const jobs = getJobSummaries().filter((j) => courseNames.has(j.subject));
+  const [allConcepts, allJobs] = await Promise.all([getAllConcepts(), getJobSummaries()]);
+  const concepts = allConcepts.filter((c) => courseNames.has(c.subject));
+  const jobs = allJobs.filter((j) => courseNames.has(j.subject));
   const cycle = getCycleInfo();
-  const streak = getStreak();
+  const streak = await getStreak();
 
   const unlocked = concepts.filter((c) => !c.locked);
   const totalXp = unlocked.reduce((s, c) => s + c.score, 0);

@@ -16,7 +16,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.17"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -172,6 +172,7 @@ export type Database = {
           is_correct: boolean
           question: string
           session_id: string | null
+          technique_id: string | null
           technique_name: string
           user_answer: string
         }
@@ -182,6 +183,7 @@ export type Database = {
           is_correct: boolean
           question: string
           session_id?: string | null
+          technique_id?: string | null
           technique_name: string
           user_answer: string
         }
@@ -192,6 +194,7 @@ export type Database = {
           is_correct?: boolean
           question?: string
           session_id?: string | null
+          technique_id?: string | null
           technique_name?: string
           user_answer?: string
         }
@@ -201,6 +204,13 @@ export type Database = {
             columns: ["session_id"]
             isOneToOne: false
             referencedRelation: "class_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "generated_homework_technique_id_fkey"
+            columns: ["technique_id"]
+            isOneToOne: false
+            referencedRelation: "techniques"
             referencedColumns: ["id"]
           },
         ]
@@ -269,6 +279,139 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      technique_history: {
+        Row: {
+          activity: string
+          created_at: string
+          date: string
+          delta: number
+          id: string
+          note: string | null
+          result: number
+          technique_id: string
+        }
+        Insert: {
+          activity: string
+          created_at?: string
+          date: string
+          delta: number
+          id?: string
+          note?: string | null
+          result: number
+          technique_id: string
+        }
+        Update: {
+          activity?: string
+          created_at?: string
+          date?: string
+          delta?: number
+          id?: string
+          note?: string | null
+          result?: number
+          technique_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "technique_history_technique_id_fkey"
+            columns: ["technique_id"]
+            isOneToOne: false
+            referencedRelation: "techniques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      technique_prerequisites: {
+        Row: {
+          prerequisite_id: string
+          technique_id: string
+        }
+        Insert: {
+          prerequisite_id: string
+          technique_id: string
+        }
+        Update: {
+          prerequisite_id?: string
+          technique_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "technique_prerequisites_prerequisite_id_fkey"
+            columns: ["prerequisite_id"]
+            isOneToOne: false
+            referencedRelation: "techniques"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "technique_prerequisites_technique_id_fkey"
+            columns: ["technique_id"]
+            isOneToOne: false
+            referencedRelation: "techniques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      technique_sources: {
+        Row: {
+          source_file: string
+          technique_id: string
+        }
+        Insert: {
+          source_file: string
+          technique_id: string
+        }
+        Update: {
+          source_file?: string
+          technique_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "technique_sources_technique_id_fkey"
+            columns: ["technique_id"]
+            isOneToOne: false
+            referencedRelation: "techniques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      techniques: {
+        Row: {
+          content_type: string | null
+          created_at: string
+          id: string
+          last_reviewed: string | null
+          score: number
+          skill_name: string
+          slug: string
+          status: string | null
+          subject: string
+          unit: string | null
+        }
+        Insert: {
+          content_type?: string | null
+          created_at?: string
+          id?: string
+          last_reviewed?: string | null
+          score?: number
+          skill_name: string
+          slug: string
+          status?: string | null
+          subject: string
+          unit?: string | null
+        }
+        Update: {
+          content_type?: string | null
+          created_at?: string
+          id?: string
+          last_reviewed?: string | null
+          score?: number
+          skill_name?: string
+          slug?: string
+          status?: string | null
+          subject?: string
+          unit?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {
