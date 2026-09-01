@@ -1,4 +1,4 @@
-import type { Concept } from "./vault";
+import type { Concept } from "./techniques";
 
 /**
  * Lays a subject's prerequisite graph out as a neural network: neurons in
