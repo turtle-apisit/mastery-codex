@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase/client";
-import { recordLectureFile } from "./actions";
 
 const BUCKET = "lecture-files";
 
@@ -47,9 +46,13 @@ export default function UploadForm({
         return;
       }
 
-      const result = await recordLectureFile(courseId, file.name, uploadData.path);
-      if (result.error) {
-        setError(`${file.name}: ${result.error}`);
+      const { error: insertError } = await supabase.from("lecture_files").insert({
+        course_id: courseId,
+        file_name: file.name,
+        storage_path: uploadData.path,
+      });
+      if (insertError) {
+        setError(`${file.name}: ${insertError.message}`);
         setBusy(false);
         return;
       }
