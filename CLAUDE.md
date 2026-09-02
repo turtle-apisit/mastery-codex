@@ -93,6 +93,27 @@ Trust in what an agent produced is earned by checking it against the
 system it claims to have changed — every time, not spot-checked
 occasionally — before Nova reports it to the learner as done.
 
+### The Lyra-capture gate
+
+A Lyra capture specifically gets two independent checks against the source
+lecture file before it's done, not one — because "does this note actually
+say what the source says" is exactly the kind of claim step 0 above exists
+to catch, and a single reviewer misreading the same PDF the same way is a
+real failure mode:
+
+1. **Rigel checks first**, immediately, every time — not sampled, not on
+   the weekly cadence its other duties run on (`.claude/agents/rigel.md`
+   Procedure step 0). It opens each new Technique's cited source and
+   confirms the `skill_name` and `content_type` hold up.
+2. **Nova cross-checks against the same source independently** — reading
+   the cited material itself, not just reading Rigel's report of it. The
+   two checks have to agree; a captured Technique that only Rigel verified,
+   or only Nova spot-checked secondhand, hasn't cleared the gate.
+
+Only once both agree does the capture get marked done and `techniques_generated`
+flip to `true` on the source file — the gate sits between Lyra's insert and
+that flag, not after it.
+
 ## Layout
 
 | Path | Holds |
