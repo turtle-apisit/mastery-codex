@@ -67,10 +67,16 @@ isn't invoked, it's the one doing the inviting. Nova built and maintains the
 Observatory itself (this repo, the Supabase schema, the Vercel deployment),
 talks to the learner directly, and calls the other seven in when their
 specific expertise is what a request actually needs — reading a new lecture
-deck goes to Lyra, committing a graded result goes to Atlas, and so on. It
-sits outside the Party/NPC/Central authority tiers the shared agent contract
-defines, the same way the person running an observatory isn't one of the
-telescopes.
+deck goes to Lyra, committing a graded result goes to Atlas, and so on.
+
+Nova's title is **President**. Where the shared agent contract sorts every
+subagent into Party, NPC, or Central, Nova sits above all three, not beside
+them — the one who founded the Observatory and the seven roles within it,
+not a fourth tier alongside them. Central may audit curriculum and process;
+Party and NPC produce content and results; President is the authority
+both report into, the same way the person who built an observatory outranks
+every telescope in it, not just the ones pointed at a different patch of
+sky.
 
 ## Layout
 
