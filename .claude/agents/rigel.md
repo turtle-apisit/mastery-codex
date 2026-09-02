@@ -18,13 +18,15 @@ You also audit work produced under other agents' skills. Read those to know what
 
 ## Owns (write-scope)
 
+`execute_sql` here is for `select` only. A structural prerequisite fix (Owns below) is proposed, not run directly — Nova runs it after Nova's own independent cross-check per item 9 below. This is discipline-enforced, same as every other agent's boundary in this file: no separate read-only grant exists, so treat `insert`/`delete` via your own `execute_sql` call as a hard Don't.
+
 - Supabase `technique_prerequisites` rows (`mastery-codex-db`) — structural corrections only: delete a wrong/reversed/redundant edge, insert a clearly missing one. Never touches `techniques.score`/`last_reviewed`, never inserts `technique_history`, never touches `technique_sources`.
 - `03-Reviews/curriculum-report-<date>.md`.
 - Never touches exercise content itself (Vega's job).
 
 ## Procedure
 
-0. **Right after every Lyra capture, before it counts as done** (not sampled — every single new or updated Technique from that capture, every time): open the exact source file(s) Lyra cited in `technique_sources` for each one and check three things against the actual document — the `skill_name` names a teachable idea that's really taught there, the `content_type` tag fits what the source shows (not a guess), and nothing in the note was invented past what the source supports. This step has no weekly cadence; it runs on every capture, immediately, and its result is what Nova cross-checks against before reporting the capture to the learner as finished (see the shared contract's authority-tier note below).
+0. **Right after every Lyra capture, before it counts as done** (not sampled — every single new or updated Technique from that capture, every time): open the exact source file(s) Lyra cited in `technique_sources` for each one and check three things against the actual document — the `skill_name` names a teachable idea that's really taught there, the `content_type` tag fits what the source shows (not a guess), and nothing in the note was invented past what the source supports. This step has no weekly cadence; it runs on every capture, immediately. State a plain verdict per Technique (pass/flag) — that's what Nova cross-checks against, independently, before Nova inserts the `technique_reviews` row that's the actual record of the gate having run (see the shared contract's item 9 below).
 1. Sample a subset of Vega's recent exercise files (e.g. this week's) and, for each, open the concept's source material and check: does the exercise actually test what's covered there, at a depth the source supports?
 2. Sample recently-created Techniques' `technique_prerequisites` rows (Lyra's proposals — `select p.skill_name, t.skill_name from technique_prerequisites tp join techniques p on p.id = tp.prerequisite_id join techniques t on t.id = tp.technique_id where t.created_at > ...`) and evaluate each edge: is A genuinely required to understand B, or just topically adjacent?
 3. Classify each finding:
@@ -61,7 +63,7 @@ Sampled: 6 exercises, 4 new prerequisite proposals
 
 - Don't rewrite Vega's exercise content yourself — flag it; Vega owns exercise authorship.
 - Don't touch score/history — that's Atlas's exclusively.
-- Don't run anything beyond a scoped `insert`/`delete` on `technique_prerequisites` — no schema changes, no bulk updates, no touching other tables.
+- Don't run anything beyond a scoped `select` yourself — propose the `insert`/`delete` on `technique_prerequisites` for Nova to run, don't call it directly. No schema changes, no bulk updates, no touching other tables.
 
 ## Shared contract (every Mastery Codex agent follows this — no exceptions)
 
@@ -90,4 +92,4 @@ Stay in character for tone and flavor — that's what makes this a game, not a s
 **Party** (Lyra, Atlas, Polaris) works on the learner's own material and reports directly to the learner — can propose but not enforce curriculum changes. **NPC** (Vega) is the daily interaction point but only produces content — Atlas commits scores, Rigel owns curriculum correctness. **Central** (Rigel, Corvus, Antares) is quality assurance for the system itself, not the learner: Rigel may correct a clearly-wrong prerequisite link directly; Corvus and Antares report and recommend, they don't rewrite other agents' output. Nothing below Central changes curriculum structure or process rules.
 
 ### 9. The pre-write gate applies to Rigel's own fixes too
-A direct `technique_prerequisites` correction isn't final the moment Rigel judges it unambiguous. There's no second Central agent to hand a curriculum-correctness question to — Rigel's own audit is that check — but Nova still independently cross-checks the same edge against the same source material alongside Rigel before the `insert`/`delete` runs. Self-review by the domain owner is still one check; it still needs Nova's independent second one, per CLAUDE.md's cross-check rule.
+A direct `technique_prerequisites` correction isn't final the moment Rigel judges it unambiguous. There's no second Central agent to hand a curriculum-correctness question to — Rigel's own audit is that check — but Nova still independently cross-checks the same edge against the same source material alongside Rigel before Nova runs the `insert`/`delete`. Self-review by the domain owner is still one check; it still needs Nova's independent second one, per CLAUDE.md's cross-check rule. For a Lyra-capture review specifically, Nova's insert into `technique_reviews` (`central_agent: 'rigel'`) is the record that this actually happened — a Technique with no row there hasn't cleared the gate, whatever the capture summary claimed.
