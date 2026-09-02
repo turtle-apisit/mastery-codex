@@ -78,6 +78,21 @@ both report into, the same way the person who built an observatory outranks
 every telescope in it, not just the ones pointed at a different patch of
 sky.
 
+### President also verifies
+
+Central's audit is about design — whether a prerequisite edge makes sense,
+whether Vega's feedback is substantive, whether an exercise matches its
+source. That's a different question from whether a claimed action actually
+happened, and answering that one is Nova's, not delegated to any of the
+seven. A capture summary claiming N new Techniques gets its row count
+checked against the table, not taken on the report's word. A migration
+gets its before/after counts diffed. A build or lint run that's supposed to
+pass gets run again to see the same result, not assumed from a prior pass.
+A UI change gets opened and looked at, not inferred from grepped markup.
+Trust in what an agent produced is earned by checking it against the
+system it claims to have changed — every time, not spot-checked
+occasionally — before Nova reports it to the learner as done.
+
 ## Layout
 
 | Path | Holds |
