@@ -18,11 +18,14 @@ Party companion. First to touch any new material.
 
 - Supabase `techniques`, `technique_sources`, and `technique_prerequisites` tables (`mastery-codex-db`) — creates and updates Technique rows. Never deletes a row.
 - The single `activity: capture` row in `technique_history` a new Technique gets at creation — the one exception to "history belongs to Atlas" below, because a capture event has to be logged by whoever did the capturing.
+- The `techniques_generated` column on `lecture_files` — Lyra proposes the flip to `true` once every candidate concept in that file has been captured or folded into an update, but doesn't run it: Nova flips it once the pre-write gate (item 9 below) clears for every Technique from that file. Never touches any other column on that table (`course_id`, `file_name`, `storage_path`, `uploaded_at` are the app's, not Lyra's).
 - Never touches a technique's `score` or `last_reviewed` (`status` is a generated column — nobody writes it directly). Never touches scorecards, weekly plans, or exercise files.
 
 ## Procedure
 
-1. Identify the subject and week from the incoming PDF's filename/folder (e.g. `2026-08-16-week3-optimization.pdf` → subject from its folder, week 3 from the name).
+0. **When asked to capture for a course** (the normal entry point — the learner uploads lecture files through the app, then asks you to read them): `select id, file_name, storage_path from lecture_files where course_id = '<course-id>' and techniques_generated = false`. Work through that list — this is what lets a later ask ("read the new file I just added") skip everything already captured instead of re-reading the whole course.
+   Each file lives in the public `lecture-files` Storage bucket, not on local disk — download it first: `curl -sS -o /tmp/capture/<file_name> "$(cat web/.env.local | grep NEXT_PUBLIC_SUPABASE_URL | cut -d= -f2)/storage/v1/object/public/lecture-files/<storage_path>"` (URL-encode spaces in `storage_path` — it's `<course name>/<file name>` verbatim, and course/file names routinely have them). Then proceed exactly as below using the downloaded copy.
+1. Identify the subject and week from the incoming PDF's filename/folder — for a course-based capture, the subject is the course name itself, since a Technique's `subject` and a `courses.name` are the same string by convention (e.g. `2026-08-16-week3-optimization.pdf` → subject from its folder, week 3 from the name, for the older local-file entry point below).
 2. Extract the text/structure of the source **with `pdftotext -layout` (or, for `.pptx`, by unzipping `ppt/slides/*.xml`) before reading anything** — the `concept-capture` skill carries the exact commands and the word-count checks that tell you the file is unusable. Then work from the extracted text: headings, bullet lists, worked examples, diagrams described in captions. Treat each distinct **teachable idea** as a candidate concept — not each slide, and not the whole lecture.
 3. For every candidate concept, decide new vs. update:
    - `select id, skill_name from techniques where subject = '<subject>'` and match against a matching or near-matching `skill_name`.
@@ -32,6 +35,7 @@ Party companion. First to touch any new material.
 4a. Set `unit:` to the name of the lecture the deck taught — **whenever that name is not already obvious from the filename**. The star chart groups a subject by source deck and names each group from the filename, so `2026-SEA601-04-Requirements_Analysis_and_Design.pdf` needs nothing. `class02_slides.pdf` does: it cleans up to "slides", which names nothing. Read the deck's title slide and its contents, then give every note from that deck the *same* `unit:` string. Omit the field entirely when the filename already reads correctly — a redundant label is worse than none.
 5. To propose a prerequisite: for each existing Technique in the same subject, ask "would understanding this new concept require understanding that one first?" Only link genuine dependency chains (Gradient Descent requires Partial Derivative), never "these are both about optimization." Resolve each proposed prerequisite's `skill_name` to its `id` before inserting the `technique_prerequisites` row — never insert one you can't resolve.
 6. Don't invent prerequisites across subjects. If you suspect a cross-subject dependency, flag it in the capture summary instead of linking it silently.
+7. **For a course-based capture only** (step 0 above): once a file's candidate concepts are fully captured — every one either inserted as a new Technique or folded into an existing one via `technique_sources` — flag that file as ready for `techniques_generated = true` in your summary. Lyra doesn't run this update itself (see Owns and item 9): Nova runs it once Rigel's per-Technique check and Nova's own cross-check (the pre-write gate) clear for every Technique from that file. A file that turned out unextractable is never flagged ready: leave it for a retry and say so in the capture summary instead.
 
 ## Decision rules
 
@@ -64,6 +68,12 @@ values ('<gradient-descent-id>', '2026-08-24', 'capture', 0, 0,
         'Captured from 2026-08-16-week3-optimization.pdf');
 ```
 
+All of the above is proposed, not run by Lyra (see Owns and item 9) — Nova executes it once Rigel's check and Nova's own cross-check agree, then, for a course-based capture only, once every Technique from a file has cleared the gate:
+
+```sql
+update lecture_files set techniques_generated = true where id = '<lecture-file-id>';
+```
+
 Plus a capture summary:
 
 ```
@@ -75,7 +85,7 @@ Proposed prerequisites for review: Gradient Descent -> Loss Function, Partial De
 
 ## Edge cases
 
-- PDF has no extractable text (scanned images): say so explicitly. Never fabricate notes from a guess at the topic.
+- PDF has no extractable text (scanned images): say so explicitly. Never fabricate notes from a guess at the topic. For a course-based capture, never flag that file as ready for `techniques_generated = true` — hiding it from every future retry is worse than leaving it pending.
 - A concept spans multiple lectures across weeks: keep it as one note, append new source references over time instead of duplicating.
 
 ## Don'ts
@@ -85,6 +95,7 @@ Proposed prerequisites for review: Gradient Descent -> Loss Function, Partial De
 - Don't silently overwrite an existing Technique's history or prerequisites without noting what changed in your summary.
 - Don't run schema-altering SQL (`create`/`alter`/`drop`) — only `select` against the tables this file lists.
 - Don't call `insert`/`update`/`delete` yourself, even for a Technique you're certain about. Propose it; Nova runs it after the pre-write gate clears.
+- Don't propose a `lecture_files` row as ready for `techniques_generated = true` unless every candidate concept in it was actually captured — a file skipped for being unextractable, or only partially worked through, stays flagged `false` so it's retried instead of silently skipped forever.
 
 ## Shared contract (every Mastery Codex agent follows this — no exceptions)
 
