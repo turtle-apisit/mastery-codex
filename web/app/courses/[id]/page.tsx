@@ -7,11 +7,28 @@ import { supabase } from "@/lib/supabase/client";
 import { getAllConcepts, type Concept } from "@/lib/techniques";
 import type { Tables } from "@/lib/supabase/types";
 import UploadForm from "./lecture-files/UploadForm";
-import ConstellationGraph from "@/components/ConstellationGraph";
 
 type Course = Tables<"courses">;
 type LectureFile = Tables<"lecture_files">;
 type ClassSession = Tables<"class_sessions">;
+
+/** Groups techniques by unit (falling back to the first source file when a
+ * Technique has no unit set), in first-seen order, and sorts each group's
+ * techniques alphabetically — a stable reading order for review, not a graph
+ * layout. */
+function groupByUnit(techniques: Concept[]): [string, Concept[]][] {
+  const groups = new Map<string, Concept[]>();
+  for (const t of techniques) {
+    const key = t.unit ?? t.source[0] ?? "Ungrouped";
+    const arr = groups.get(key) ?? [];
+    arr.push(t);
+    groups.set(key, arr);
+  }
+  for (const arr of groups.values()) {
+    arr.sort((a, b) => a.skill_name.localeCompare(b.skill_name));
+  }
+  return Array.from(groups.entries());
+}
 
 export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -20,7 +37,6 @@ export default function CourseDetailPage() {
   const [lectureFiles, setLectureFiles] = useState<LectureFile[]>([]);
   const [sessions, setSessions] = useState<ClassSession[]>([]);
   const [techniques, setTechniques] = useState<Concept[]>([]);
-  const [selectedTechnique, setSelectedTechnique] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -138,17 +154,32 @@ export default function CourseDetailPage() {
           </p>
         ) : (
           <>
-            <p className="field-hint">
-              {techniques.length} skills ·{" "}
-              {techniques.reduce((s, c) => s + c.prerequisites.length, 0)} links
-            </p>
-            <ConstellationGraph
-              subject={course.name}
-              concepts={techniques}
-              isLit={() => true}
-              selected={selectedTechnique}
-              onSelect={setSelectedTechnique}
-            />
+            <p className="field-hint">{techniques.length} techniques captured</p>
+            {groupByUnit(techniques).map(([unit, group]) => (
+              <div className="technique-group" key={unit}>
+                <h3 className="technique-group-title">{unit}</h3>
+                {group.map((t) => (
+                  <div className="technique-note" key={t.slug}>
+                    <div className="technique-note-head">
+                      <h3>{t.skill_name}</h3>
+                      {t.content_type && <span className="tag">{t.content_type}</span>}
+                    </div>
+                    {t.explanation ? (
+                      <p>{t.explanation}</p>
+                    ) : (
+                      <p className="field-hint">
+                        No explanation captured for this one yet.
+                      </p>
+                    )}
+                    {t.prerequisites.length > 0 && (
+                      <p className="field-hint">
+                        Requires: {t.prerequisites.join(", ")}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ))}
           </>
         )}
       </section>

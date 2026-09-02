@@ -111,6 +111,18 @@ Every note carries a content type, because it decides how the concept can be tes
 
 Tag `mixed` sparingly — it doubles the concept's testing surface. If one side dominates the source's treatment, tag the dominant side.
 
+## 3a. The explanation: what the learner actually reads
+
+`skill_name` is a label; `explanation` is the reason the note exists. It's what a learner reads on the Course page to review the concept instead of reopening the PDF, so it has to actually teach — not restate the name, not gesture at "this is about X."
+
+Write 2–5 sentences (a short bulleted procedure instead, when the concept is an algorithm with real steps — see Lyra's Output example) that cover what the concept is, why it matters, and how it works, using the source's own definitions, formulas, and worked examples wherever it has them. A worked numeric example from the source (an exact formula, a specific computed value) is worth including verbatim — it's concrete evidence the explanation is grounded, not a paraphrase drifting from the source.
+
+Two failure modes to catch before calling an explanation done:
+- **Restating the name.** "K-means Clustering is a clustering algorithm called K-means" teaches nothing. If you can't say more than the `skill_name` already says, the source coverage is too thin for its own note — merge or skip it (see the atomicity test above) rather than write a placeholder explanation.
+- **Blurring a confusable pair.** When a subject has near-neighbor concepts (Precision vs. Recall, Entropy vs. Information Gain vs. Gini Impurity, K-modes vs. K-prototypes), write each explanation from only that concept's own definition and check it doesn't quietly borrow the neighbor's formula or role. This is exactly what Rigel's per-capture review (see its Procedure step 0) checks for, and exactly the kind of error a single writer is prone to when several similar names are fresh in mind at once.
+
+If the source genuinely doesn't support 2+ honest sentences, that's the "under-explained" case from the atomicity test — fold the idea into a related note or skip it, and say so in the capture summary. Never pad a thin explanation to hit a length; a short, accurate one beats a longer invented one.
+
 ## 4. Prerequisite edges: dependency, not adjacency
 
 The question is never "are these related?" It's:
