@@ -24,6 +24,11 @@ export type Concept = {
   source: string[];
   /** optional display name for the lecture group this note belongs to */
   unit: string | null;
+  content_type: "theoretical" | "practical" | "mixed" | null;
+  /** the actual reviewable content — what the concept is and how it works,
+   * written from its cited source. Null on rows captured before this column
+   * existed. */
+  explanation: string | null;
   last_reviewed: string | null;
   history: HistoryEntry[];
   // derived
@@ -108,6 +113,8 @@ export async function getAllConcepts(): Promise<Concept[]> {
     prerequisites: prereqNamesByTechnique.get(t.id) ?? [],
     source: sourcesByTechnique.get(t.id) ?? [],
     unit: t.unit,
+    content_type: t.content_type as Concept["content_type"],
+    explanation: t.explanation,
     last_reviewed: t.last_reviewed,
     history: historyByTechnique.get(t.id) ?? [],
   }));

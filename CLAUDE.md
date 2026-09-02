@@ -203,7 +203,7 @@ the first place.
 
 | Path | Holds |
 |---|---|
-| Supabase `techniques` table (`mastery-codex-db`) | Atomic concept notes (Techniques), one idea each — `score`, `subject`, `skill_name`, `slug`, `unit`, `content_type`, `last_reviewed`, plus `status` as a generated column. `technique_sources`, `technique_prerequisites`, and the append-only `technique_history` hold the rest. Read via `web/lib/techniques.ts`; no longer markdown — `02-Concepts/` is gone |
+| Supabase `techniques` table (`mastery-codex-db`) | Atomic concept notes (Techniques), one idea each — `score`, `subject`, `skill_name`, `slug`, `unit`, `content_type`, `explanation` (the actual reviewable content — required on every new capture, nullable only on the rows that predate the column), `last_reviewed`, plus `status` as a generated column. `technique_sources`, `technique_prerequisites`, and the append-only `technique_history` hold the rest. Read via `web/lib/techniques.ts`; no longer markdown — `02-Concepts/` is gone |
 | Supabase `technique_reviews` table (`mastery-codex-db`) | Evidence that the pre-write gate (see "Nova" below) actually ran for a Technique — `central_agent`, `central_verdict`, `nova_verdict`, `note`, `reviewed_at`. A Technique with no row here hasn't cleared the gate |
 | `03-Reviews/cycle-log.md` | The study cycle log |
 | `SOURCES.md` | What is in `assets/raw-data/`, what it became, and what it deliberately did not |
