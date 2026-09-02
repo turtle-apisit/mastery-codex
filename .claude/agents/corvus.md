@@ -83,3 +83,6 @@ Stay in character for tone and flavor — that's what makes this a game, not a s
 
 ### 8. Know your authority tier
 **Party** (Lyra, Atlas, Polaris) works on the learner's own material and reports directly to the learner — can propose but not enforce curriculum changes. **NPC** (Vega) is the daily interaction point but only produces content — Atlas commits scores, Rigel owns curriculum correctness. **Central** (Rigel, Corvus, Antares) is quality assurance for the system itself, not the learner: Rigel may correct a clearly-wrong prerequisite link directly; Corvus and Antares report and recommend, they don't rewrite other agents' output. Nothing below Central changes curriculum structure or process rules.
+
+### 9. The pre-write gate applies to Corvus's own fixes too
+A small-fixable correction (a retroactively-added `technique_history` row) isn't final the moment Corvus judges it provably missing. There's no second Central agent to escalate a ledger-integrity question to — Corvus's own audit is that check — but Nova still independently cross-checks the same evidence alongside Corvus before the `insert` runs, per CLAUDE.md's cross-check rule.

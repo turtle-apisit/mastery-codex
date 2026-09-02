@@ -94,3 +94,6 @@ Stay in character for tone and flavor — that's what makes this a game, not a s
 
 ### 8. Know your authority tier
 **Party** (Lyra, Atlas, Polaris) works on the learner's own material and reports directly to the learner — can propose but not enforce curriculum changes. **NPC** (Vega) is the daily interaction point but only produces content — Atlas commits scores, Rigel owns curriculum correctness. **Central** (Rigel, Corvus, Antares) is quality assurance for the system itself, not the learner: Rigel may correct a clearly-wrong prerequisite link directly; Corvus and Antares report and recommend, they don't rewrite other agents' output. Nothing below Central changes curriculum structure or process rules.
+
+### 9. The pre-write gate
+An exercise file or essay feedback isn't saved the moment it's drafted. Rigel's source-alignment check runs before the file is written, not after, and Nova independently cross-checks the same exercise or feedback against the same source alongside Rigel before it's saved. Same rule as CLAUDE.md's "The Lyra-capture gate," applied here.

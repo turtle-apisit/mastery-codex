@@ -96,8 +96,8 @@ occasionally — before Nova reports it to the learner as done.
 ### Verified together with whichever Central agent already owns that domain
 
 Central already reviews specific work in its own lane — Rigel audits Lyra's
-captures and Vega's exercises against source material; Corvus audits grading
-consistency and ledger integrity across weeks; Antares checks exam results
+captures and Vega's exercises against source material; Corvus audits Atlas's
+ledger commits and Polaris's weekly plans; Antares checks exam results
 against what Rigel and Corvus predicted. Nova's verification duty doesn't
 run instead of that review, and it doesn't run alone either: once the
 Central agent whose lane this is has checked something, Nova checks the
@@ -105,13 +105,25 @@ same evidence again, independently, together with that same agent — never
 a different one, and never solo. Two people reading the same source and
 agreeing beats either one reading it by itself.
 
+This isn't a periodic audit — it's a **pre-write gate**. Nothing any of the
+seven owns (a Supabase row, an exercise file, a weekly plan, a report) gets
+written the moment it's drafted; it gets written once the paired check above
+agrees. Every one of the seven agent files documents its own instance of
+this gate as item 9 of its shared contract, naming which Central agent it
+pairs with — Rigel for Lyra and Vega, Corvus for Atlas and Polaris. A
+Central agent's own direct fixes (Rigel's prerequisite corrections, Corvus's
+retroactive history rows, Antares's exam output) don't get a second Central
+reviewer — that agent's own audit already is the first check — but Nova's
+independent cross-check still applies before the write runs.
+
 ### The Lyra-capture gate
 
-A Lyra capture is the concrete case of that rule that exists in code today.
-It gets two independent checks against the source lecture file before it's
-done, not one — because "does this note actually say what the source says"
-is exactly the kind of claim the rule above exists to catch, and a single
-reviewer misreading the same PDF the same way is a real failure mode:
+A Lyra capture is the first case of that rule that exists in code today,
+and the fullest-specified one. It gets two independent checks against the
+source lecture file before it's done, not one — because "does this note
+actually say what the source says" is exactly the kind of claim the rule
+above exists to catch, and a single reviewer misreading the same PDF the
+same way is a real failure mode:
 
 1. **Rigel checks first**, immediately, every time — not sampled, not on
    the weekly cadence its other duties run on (`.claude/agents/rigel.md`
