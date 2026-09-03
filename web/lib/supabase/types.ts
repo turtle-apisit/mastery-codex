@@ -413,12 +413,15 @@ export type Database = {
           explanation: string | null
           id: string
           last_reviewed: string | null
+          reasoning: string | null
           score: number
           skill_name: string
           slug: string
           status: string | null
           subject: string
           unit: string | null
+          use_case: string | null
+          use_case_source: string | null
         }
         Insert: {
           content_type?: string | null
@@ -426,12 +429,15 @@ export type Database = {
           explanation?: string | null
           id?: string
           last_reviewed?: string | null
+          reasoning?: string | null
           score?: number
           skill_name: string
           slug: string
           status?: string | null
           subject: string
           unit?: string | null
+          use_case?: string | null
+          use_case_source?: string | null
         }
         Update: {
           content_type?: string | null
@@ -439,12 +445,15 @@ export type Database = {
           explanation?: string | null
           id?: string
           last_reviewed?: string | null
+          reasoning?: string | null
           score?: number
           skill_name?: string
           slug?: string
           status?: string | null
           subject?: string
           unit?: string | null
+          use_case?: string | null
+          use_case_source?: string | null
         }
         Relationships: []
       }

@@ -26,13 +26,22 @@ You also audit work produced under other agents' skills. Read those to know what
 
 ## Procedure
 
-0. **Right after every Lyra capture, before it counts as done** (not sampled — every single new or updated Technique from that capture, every time): open the exact source file(s) Lyra cited in `technique_sources` for each one and check four things against the actual document — the `skill_name` names a teachable idea that's really taught there, the `content_type` tag fits what the source shows (not a guess), the `explanation` actually says what the source says (no invented detail, no swapped concept, numbers and formulas match), and nothing in the note was invented past what the source supports. This step has no weekly cadence; it runs on every capture, immediately. State a plain verdict per Technique (pass/flag) — that's what Nova cross-checks against, independently, before Nova inserts the `technique_reviews` row that's the actual record of the gate having run (see the shared contract's item 9 below).
+0. **Right after every Lyra capture, before it counts as done** (not sampled — every single new or updated Technique from that capture, every time): open the exact source file(s) Lyra cited in `technique_sources` for each one and check against the actual document:
+   - the `skill_name` names a teachable idea that's really taught there;
+   - the `content_type` tag fits what the source shows (not a guess);
+   - the `explanation` actually says what the source says, comprehensively — no invented detail, no swapped concept, no step or case skipped that the source covers, numbers and formulas match;
+   - the `reasoning` walks the same worked example the source does, with every intermediate value matching;
+   - nothing in `explanation`/`reasoning` was invented past what the source supports.
+   Then, **`use_case` gets a stricter, separate check** — it's the one field allowed to extend beyond the cited source, so "does it match the PDF" isn't the test:
+   - `use_case_source` is present and actually names where the example came from (not blank, not "the lecture" when it should have been in `explanation` instead);
+   - re-derive the concept's definition and constraints from the cited source yourself, then check the `use_case` doesn't contradict them — an example that uses the concept in a way the source's own treatment rules out is a flag, not a pass, regardless of how good the example reads.
+   This step has no weekly cadence; it runs on every capture, immediately. State a plain verdict per Technique **and per field** (explanation/reasoning pass-or-flag, use_case pass-or-flag with its own reason) — that's what Nova cross-checks against, independently, before Nova inserts the `technique_reviews` row that's the actual record of the gate having run (see the shared contract's item 9 below).
 1. Sample a subset of Vega's recent exercise files (e.g. this week's) and, for each, open the concept's source material and check: does the exercise actually test what's covered there, at a depth the source supports?
 2. Sample recently-created Techniques' `technique_prerequisites` rows (Lyra's proposals — `select p.skill_name, t.skill_name from technique_prerequisites tp join techniques p on p.id = tp.prerequisite_id join techniques t on t.id = tp.technique_id where t.created_at > ...`) and evaluate each edge: is A genuinely required to understand B, or just topically adjacent?
 3. Classify each finding:
    - **Exercise mismatch** → report to Vega, don't rewrite the exercise.
    - **Prerequisite error** (wrong or missing dependency) → fix directly with a scoped `insert`/`delete` against `technique_prerequisites`, since this is structural curriculum data, not exercise content.
-   - **Capture mismatch** (step 0 — a `skill_name`/`content_type`/`explanation` that doesn't hold up against its cited source) → report it plainly; don't silently correct someone else's Technique row content, since fixing `techniques` itself is outside this file's write-scope (see Owns above and Don'ts below).
+   - **Capture mismatch** (step 0 — a `skill_name`/`content_type`/`explanation`/`reasoning` that doesn't hold up against its cited source, or a `use_case` that's uncited or contradicts the source's own principles) → report it plainly; don't silently correct someone else's Technique row content, since fixing `techniques` itself is outside this file's write-scope (see Owns above and Don'ts below).
 4. Write the curriculum report: what was sampled, what passed, what was flagged, what was corrected directly vs. handed back.
 
 ## Decision rules

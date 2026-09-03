@@ -164,13 +164,38 @@ export default function CourseDetailPage() {
                       <h3>{t.skill_name}</h3>
                       {t.content_type && <span className="tag">{t.content_type}</span>}
                     </div>
+
                     {t.explanation ? (
-                      <p>{t.explanation}</p>
+                      <div className="technique-field">
+                        <div className="technique-field-label">What it is</div>
+                        <p>{t.explanation}</p>
+                      </div>
                     ) : (
                       <p className="field-hint">
                         No explanation captured for this one yet.
                       </p>
                     )}
+
+                    {t.reasoning && (
+                      <div className="technique-field">
+                        <div className="technique-field-label">How it works</div>
+                        <p>{t.reasoning}</p>
+                      </div>
+                    )}
+
+                    {t.use_case && (
+                      <div className="technique-field technique-field-usecase">
+                        <div className="technique-field-label">
+                          Real-world use case
+                          <span className="tag technique-usecase-tag">not from lecture</span>
+                        </div>
+                        <p>{t.use_case}</p>
+                        {t.use_case_source && (
+                          <p className="field-hint">Source: {t.use_case_source}</p>
+                        )}
+                      </div>
+                    )}
+
                     {t.prerequisites.length > 0 && (
                       <p className="field-hint">
                         Requires: {t.prerequisites.join(", ")}

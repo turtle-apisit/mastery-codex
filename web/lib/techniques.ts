@@ -29,6 +29,14 @@ export type Concept = {
    * written from its cited source. Null on rows captured before this column
    * existed. */
   explanation: string | null;
+  /** the worked calculation/approach, elaborating explanation's source-grounded
+   * material in full detail. */
+  reasoning: string | null;
+  /** a real-world application example — the one field allowed to extend
+   * beyond the cited source. Always paired with use_case_source. */
+  use_case: string | null;
+  /** citation for use_case when it isn't drawn from the cited lecture. */
+  use_case_source: string | null;
   last_reviewed: string | null;
   history: HistoryEntry[];
   // derived
@@ -115,6 +123,9 @@ export async function getAllConcepts(): Promise<Concept[]> {
     unit: t.unit,
     content_type: t.content_type as Concept["content_type"],
     explanation: t.explanation,
+    reasoning: t.reasoning,
+    use_case: t.use_case,
+    use_case_source: t.use_case_source,
     last_reviewed: t.last_reviewed,
     history: historyByTechnique.get(t.id) ?? [],
   }));

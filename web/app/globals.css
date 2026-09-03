@@ -1800,6 +1800,27 @@ button{font-family:inherit;}
   .technique-note-head{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;}
   .technique-note h3{margin:0;font-size:var(--step-1);}
   .technique-note p{margin:var(--sp-2) 0 0;line-height:1.6;}
+
+  /* explanation / reasoning / use_case -- three source-discipline levels,
+     rendered as clearly separated, labeled sub-sections rather than one
+     run-on paragraph. */
+  .technique-field{margin-top:var(--sp-4);}
+  .technique-field-label{
+    display:flex;align-items:center;gap:var(--sp-2);
+    font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--text-faint);
+  }
+  .technique-field p{margin:var(--sp-1) 0 0;}
+  .technique-field-usecase{
+    padding:var(--sp-3);border:1px solid var(--border-strong);
+    border-radius:var(--r-md);
+    background:color-mix(in oklch, var(--surface-2) 50%, transparent);
+  }
+  .technique-usecase-tag{
+    font-size:9px;padding:0 var(--sp-2);
+    color:var(--accent);border-color:var(--accent);
+    text-transform:none;letter-spacing:.04em;
+  }
 }
 
 /* Kept last: these overrides must win over every rule above. */

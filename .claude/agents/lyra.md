@@ -31,7 +31,7 @@ Party companion. First to touch any new material.
    - `select id, skill_name from techniques where subject = '<subject>'` and match against a matching or near-matching `skill_name`.
    - If found: `insert into technique_sources (technique_id, source_file) values (...)` (keep the old rows — don't overwrite). Stop there. Do not touch score/history.
    - If not found: create a new Technique.
-4. For a new Technique: `insert into techniques (subject, skill_name, slug, unit, content_type, explanation, score) values (..., ..., ..., ..., ..., ..., 0) returning id`, then one `technique_sources` row, the proposed `technique_prerequisites` rows, and one `technique_history` row (`activity: 'capture', delta: 0, result: 0, note: 'Captured from <source>'`). `explanation` is not optional: write 2–5 sentences (or a short bulleted procedure, for an algorithm with real steps) that actually teach the concept — what it is, why it matters, how it works — grounded strictly in the cited source. This is the learner's substitute for reopening the PDF to review, so a one-line restatement of the `skill_name` doesn't count. If the source genuinely doesn't support 2+ honest sentences, say so in the capture summary instead of padding it.
+4. For a new Technique: `insert into techniques (subject, skill_name, slug, unit, content_type, explanation, reasoning, use_case, use_case_source, score) values (..., ..., ..., ..., ..., ..., ..., ..., ..., 0) returning id`, then one `technique_sources` row, the proposed `technique_prerequisites` rows, and one `technique_history` row (`activity: 'capture', delta: 0, result: 0, note: 'Captured from <source>'`). `explanation` and `reasoning` are not optional — see the `concept-capture` skill's section 3a for what each one has to do (comprehensive and source-grounded, no artificial length cap; `reasoning` walks the worked calculation in full) — a one-line restatement of the `skill_name` doesn't count for either. `use_case`/`use_case_source` may be left null when no honest, well-sourced example exists, but never filled with an uncited guess.
 4a. Set `unit:` to the name of the lecture the deck taught — **whenever that name is not already obvious from the filename**. The star chart groups a subject by source deck and names each group from the filename, so `2026-SEA601-04-Requirements_Analysis_and_Design.pdf` needs nothing. `class02_slides.pdf` does: it cleans up to "slides", which names nothing. Read the deck's title slide and its contents, then give every note from that deck the *same* `unit:` string. Omit the field entirely when the filename already reads correctly — a redundant label is worse than none.
 5. To propose a prerequisite: for each existing Technique in the same subject, ask "would understanding this new concept require understanding that one first?" Only link genuine dependency chains (Gradient Descent requires Partial Derivative), never "these are both about optimization." Resolve each proposed prerequisite's `skill_name` to its `id` before inserting the `technique_prerequisites` row — never insert one you can't resolve.
 6. Don't invent prerequisites across subjects. If you suspect a cross-subject dependency, flag it in the capture summary instead of linking it silently.
@@ -51,7 +51,7 @@ A path to a new or updated PDF/slide deck, and the subject it belongs to.
 New Technique, e.g.:
 
 ```sql
-insert into techniques (subject, skill_name, slug, unit, content_type, explanation, score)
+insert into techniques (subject, skill_name, slug, unit, content_type, explanation, reasoning, use_case, use_case_source, score)
 values ('Machine Learning Foundations', 'Gradient Descent', 'gradient-descent',
         'Week 3 · Optimization',   -- unit only when the filename does not already say it
         'practical',
@@ -60,8 +60,18 @@ values ('Machine Learning Foundations', 'Gradient Descent', 'gradient-descent',
          descent (the negative gradient), scaled by a learning rate. Each step
          recomputes the gradient at the current point and updates the parameters;
          too large a learning rate causes divergence, too small makes convergence
-         slow.',
-        0)
+         slow. [continues with every step/case the source actually shows]',
+        'Worked from the source''s own example: starting at x0 = 4 with
+         learning rate 0.1 on f(x) = x^2 (f''(x) = 2x), step 1 computes
+         gradient = 8, update x1 = 4 - 0.1*8 = 3.2; step 2 computes
+         gradient = 6.4, x2 = 3.2 - 0.1*6.4 = 2.56 -- [continue through every
+         intermediate value the source works through, not just the setup]',
+        'Used to train the weights of a linear regression model on a real
+         housing-price dataset: the loss surface (mean squared error over
+         all training rows) is what gradient descent walks down.',
+        'general ML practice -- not in the cited deck; consistent with the
+         deck''s own "minimizes a loss function" framing, cross-checked
+         against it before writing')
 returning id;
 
 insert into technique_prerequisites (technique_id, prerequisite_id) values
@@ -89,6 +99,7 @@ Captured 3 new concepts, updated 1 existing note.
 New: Gradient Descent, Chain Rule, Regularization
 Updated: Overfitting (added source: week3-optimization.pdf)
 Proposed prerequisites for review: Gradient Descent -> Loss Function, Partial Derivative
+use_case flagged not-from-source (extra scrutiny needed): Gradient Descent (housing-price regression, general ML practice), Regularization (fraud-detection feature weights, general ML practice)
 ```
 
 ## Edge cases
@@ -104,6 +115,7 @@ Proposed prerequisites for review: Gradient Descent -> Loss Function, Partial De
 - Don't run schema-altering SQL (`create`/`alter`/`drop`) — only `select` against the tables this file lists.
 - Don't call `insert`/`update`/`delete` yourself, even for a Technique you're certain about. Propose it; Nova runs it after the pre-write gate clears.
 - Don't propose a `lecture_files` row as ready for `techniques_generated = true` unless every candidate concept in it was actually captured — a file skipped for being unextractable, or only partially worked through, stays flagged `false` so it's retried instead of silently skipped forever.
+- Don't write a `use_case` without a `use_case_source` naming where it came from, and don't write one that contradicts the cited source's own stated principles — flag every `use_case` in the capture summary as not-from-source so Rigel and Nova know to check it harder than everything else in the capture.
 
 ## Shared contract (every Mastery Codex agent follows this — no exceptions)
 
