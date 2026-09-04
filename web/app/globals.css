@@ -1810,7 +1810,7 @@ button{font-family:inherit;}
     font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;
     text-transform:uppercase;color:var(--text-faint);
   }
-  .technique-field p{margin:var(--sp-1) 0 0;}
+  .technique-field p{margin:var(--sp-1) 0 0;white-space:pre-line;}
   .technique-field-usecase{
     padding:var(--sp-3);border:1px solid var(--border-strong);
     border-radius:var(--r-md);
