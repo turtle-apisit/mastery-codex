@@ -111,17 +111,32 @@ Every note carries a content type, because it decides how the concept can be tes
 
 Tag `mixed` sparingly — it doubles the concept's testing surface. If one side dominates the source's treatment, tag the dominant side.
 
-## 3a. The explanation: what the learner actually reads
+## 3a. What the learner actually reads: three parts, three different rules
 
-`skill_name` is a label; `explanation` is the reason the note exists. It's what a learner reads on the Course page to review the concept instead of reopening the PDF, so it has to actually teach — not restate the name, not gesture at "this is about X."
+`skill_name` is a label; the three fields below are the reason the note exists. Together they're what a learner reads on the Course page to review the concept instead of reopening the PDF — so each one has to actually teach, not restate the name or gesture at "this is about X." They carry three different evidence standards, and mixing them up is the failure mode to watch for.
 
-Write 2–5 sentences (a short bulleted procedure instead, when the concept is an algorithm with real steps — see Lyra's Output example) that cover what the concept is, why it matters, and how it works, using the source's own definitions, formulas, and worked examples wherever it has them. A worked numeric example from the source (an exact formula, a specific computed value) is worth including verbatim — it's concrete evidence the explanation is grounded, not a paraphrase drifting from the source.
+### `explanation` — comprehensive, source-grounded, no length cap
 
-Two failure modes to catch before calling an explanation done:
-- **Restating the name.** "K-means Clustering is a clustering algorithm called K-means" teaches nothing. If you can't say more than the `skill_name` already says, the source coverage is too thin for its own note — merge or skip it (see the atomicity test above) rather than write a placeholder explanation.
-- **Blurring a confusable pair.** When a subject has near-neighbor concepts (Precision vs. Recall, Entropy vs. Information Gain vs. Gini Impurity, K-modes vs. K-prototypes), write each explanation from only that concept's own definition and check it doesn't quietly borrow the neighbor's formula or role. This is exactly what Rigel's per-capture review (see its Procedure step 0) checks for, and exactly the kind of error a single writer is prone to when several similar names are fresh in mind at once.
+Cover what the concept is, why it matters, and how it works, using the source's own definitions, formulas, and worked examples wherever it has them. Unlike a summary, don't compress a multi-step mechanism down to one sentence just to stay short — if the source explains K-means as a 4-step loop, write the 4 steps. A worked numeric example from the source (an exact formula, a specific computed value) belongs here close to verbatim — it's concrete evidence the explanation is grounded, not a paraphrase drifting from the source. The only cap is the source itself: never include material the cited file doesn't actually cover, and never pad a thin section to look complete — a short, accurate one beats a longer invented one.
 
-If the source genuinely doesn't support 2+ honest sentences, that's the "under-explained" case from the atomicity test — fold the idea into a related note or skip it, and say so in the capture summary. Never pad a thin explanation to hit a length; a short, accurate one beats a longer invented one.
+### `reasoning` — the worked calculation/approach, in full
+
+Where `explanation` says what a formula or step means, `reasoning` walks it: the actual derivation, the calculation applied to the source's own numbers, the decision logic a learner would have to reproduce by hand. Go all the way through a worked example rather than gesturing at it — every intermediate number, every "why this operation here." Still bound by the same rule as `explanation`: elaboration of what the source shows, not new content invented past it.
+
+### `use_case` + `use_case_source` — the one field allowed outside the cited PDF
+
+A real-world application example may extend beyond the lecture — this is the one place in a Technique where that's allowed. Two conditions, both mandatory, both checked harder than anything else in the capture:
+1. **`use_case_source` names where it came from** — a specific real-world domain, a named textbook/standard practice, or "general practice in <field>" — never left blank and never "the lecture" (if it's actually in the lecture, it belongs in `explanation`, not here).
+2. **It cannot contradict the source's own stated principles.** Before writing it, re-check it against the cited material's definitions and constraints — an example that quietly uses the concept in a way the lecture's own treatment rules out is worse than no example.
+
+Flag every `use_case` explicitly in the capture summary as "not from the cited source" — this is the one field Rigel and Nova review with extra scrutiny (see Rigel's Procedure step 0), specifically because it's the one field they can't check by opening the PDF and matching text.
+
+### Two failure modes that apply across all three
+
+- **Restating the name.** "K-means Clustering is a clustering algorithm called K-means" teaches nothing. If you can't say more than the `skill_name` already says, the source coverage is too thin for its own note — merge or skip it (see the atomicity test above) rather than write a placeholder.
+- **Blurring a confusable pair.** When a subject has near-neighbor concepts (Precision vs. Recall, Entropy vs. Information Gain vs. Gini Impurity, K-modes vs. K-prototypes), write each field from only that concept's own definition and check it doesn't quietly borrow the neighbor's formula, role, or use case.
+
+If the source genuinely doesn't support a real `explanation`/`reasoning`, that's the "under-explained" case from the atomicity test — fold the idea into a related note or skip it, and say so in the capture summary. `use_case` may be omitted (left null) when no honest, well-sourced example exists — an absent use case is fine; an invented or uncited one is not.
 
 ## 4. Prerequisite edges: dependency, not adjacency
 
