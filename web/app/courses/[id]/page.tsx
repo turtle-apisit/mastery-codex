@@ -183,6 +183,10 @@ export default function CourseDetailPage() {
                       </div>
                     )}
 
+                    {(t.explanation || t.reasoning) && t.source.length > 0 && (
+                      <p className="field-hint">Source: {t.source.join(", ")}</p>
+                    )}
+
                     {t.use_case && (
                       <div className="technique-field technique-field-usecase">
                         <div className="technique-field-label">
