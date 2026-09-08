@@ -1785,21 +1785,37 @@ button{font-family:inherit;}
   a.course-list-card:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 
   /* Plain, readable Technique notes on the Course detail page -- text to
-     review, not a visualization. Grouped by unit/source deck. */
+     review, not a visualization. Grouped by unit/source deck. Both the
+     group and each note are native <details> -- a JS-free disclosure
+     toggle, same pattern as summary.btn below -- so a long capture reads
+     as a scannable list of names instead of one continuous wall of text. */
   .technique-group{margin-top:var(--sp-6);}
   .technique-group:first-child{margin-top:0;}
   .technique-group-title{
+    display:flex;align-items:center;gap:var(--sp-2);cursor:pointer;
+    list-style:none;
     font-family:var(--font-mono);font-size:var(--step--1);
     letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);
     margin:0 0 var(--sp-3);
   }
+  .technique-group-title::-webkit-details-marker{display:none;}
   .technique-note{
     padding:var(--sp-4) 0;border-top:1px solid var(--border-strong);
   }
   .technique-note:first-of-type{border-top:0;padding-top:0;}
-  .technique-note-head{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;}
+  .technique-note-head{
+    display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap;
+    cursor:pointer;list-style:none;
+  }
+  .technique-note-head::-webkit-details-marker{display:none;}
   .technique-note h3{margin:0;font-size:var(--step-1);}
   .technique-note p{margin:var(--sp-2) 0 0;line-height:1.6;}
+  .technique-note-body{margin-top:var(--sp-3);}
+  .disclosure-arrow{
+    display:inline-block;flex:none;color:var(--text-faint);
+    transition:transform .15s ease;
+  }
+  details[open] > summary .disclosure-arrow{transform:rotate(90deg);}
 
   /* explanation / reasoning / use_case -- three source-discipline levels,
      rendered as clearly separated, labeled sub-sections rather than one

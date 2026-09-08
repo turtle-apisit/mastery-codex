@@ -156,58 +156,67 @@ export default function CourseDetailPage() {
           <>
             <p className="field-hint">{techniques.length} techniques captured</p>
             {groupByUnit(techniques).map(([unit, group]) => (
-              <div className="technique-group" key={unit}>
-                <h3 className="technique-group-title">{unit}</h3>
+              <details className="technique-group" key={unit} open>
+                <summary className="technique-group-title">
+                  <span className="disclosure-arrow" aria-hidden="true">▸</span>
+                  {unit}
+                  <span className="field-hint">
+                    {" "}— {group.length} technique{group.length === 1 ? "" : "s"}
+                  </span>
+                </summary>
                 {group.map((t) => (
-                  <div className="technique-note" key={t.slug}>
-                    <div className="technique-note-head">
+                  <details className="technique-note" key={t.slug}>
+                    <summary className="technique-note-head">
+                      <span className="disclosure-arrow" aria-hidden="true">▸</span>
                       <h3>{t.skill_name}</h3>
                       {t.content_type && <span className="tag">{t.content_type}</span>}
-                    </div>
+                    </summary>
 
-                    {t.explanation ? (
-                      <div className="technique-field">
-                        <div className="technique-field-label">What it is</div>
-                        <p>{t.explanation}</p>
-                      </div>
-                    ) : (
-                      <p className="field-hint">
-                        No explanation captured for this one yet.
-                      </p>
-                    )}
-
-                    {t.reasoning && (
-                      <div className="technique-field">
-                        <div className="technique-field-label">How it works</div>
-                        <p>{t.reasoning}</p>
-                      </div>
-                    )}
-
-                    {(t.explanation || t.reasoning) && t.source.length > 0 && (
-                      <p className="field-hint">Source: {t.source.join(", ")}</p>
-                    )}
-
-                    {t.use_case && (
-                      <div className="technique-field technique-field-usecase">
-                        <div className="technique-field-label">
-                          Real-world use case
-                          <span className="tag technique-usecase-tag">not from lecture</span>
+                    <div className="technique-note-body">
+                      {t.explanation ? (
+                        <div className="technique-field">
+                          <div className="technique-field-label">What it is</div>
+                          <p>{t.explanation}</p>
                         </div>
-                        <p>{t.use_case}</p>
-                        {t.use_case_source && (
-                          <p className="field-hint">Source: {t.use_case_source}</p>
-                        )}
-                      </div>
-                    )}
+                      ) : (
+                        <p className="field-hint">
+                          No explanation captured for this one yet.
+                        </p>
+                      )}
 
-                    {t.prerequisites.length > 0 && (
-                      <p className="field-hint">
-                        Requires: {t.prerequisites.join(", ")}
-                      </p>
-                    )}
-                  </div>
+                      {t.reasoning && (
+                        <div className="technique-field">
+                          <div className="technique-field-label">How it works</div>
+                          <p>{t.reasoning}</p>
+                        </div>
+                      )}
+
+                      {(t.explanation || t.reasoning) && t.source.length > 0 && (
+                        <p className="field-hint">Source: {t.source.join(", ")}</p>
+                      )}
+
+                      {t.use_case && (
+                        <div className="technique-field technique-field-usecase">
+                          <div className="technique-field-label">
+                            Real-world use case
+                            <span className="tag technique-usecase-tag">not from lecture</span>
+                          </div>
+                          <p>{t.use_case}</p>
+                          {t.use_case_source && (
+                            <p className="field-hint">Source: {t.use_case_source}</p>
+                          )}
+                        </div>
+                      )}
+
+                      {t.prerequisites.length > 0 && (
+                        <p className="field-hint">
+                          Requires: {t.prerequisites.join(", ")}
+                        </p>
+                      )}
+                    </div>
+                  </details>
                 ))}
-              </div>
+              </details>
             ))}
           </>
         )}
