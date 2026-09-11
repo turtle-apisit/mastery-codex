@@ -74,7 +74,7 @@ export default function CourseDetailPage() {
   if (course === undefined) {
     return (
       <div className="page">
-        <p className="field-hint">Loading…</p>
+        <p className="field-hint loading">Loading…</p>
       </div>
     );
   }
