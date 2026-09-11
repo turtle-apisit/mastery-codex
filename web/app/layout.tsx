@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Rajdhani, IBM_Plex_Sans_Thai, IBM_Plex_Mono } from "next/font/google";
 import TopNav from "@/components/TopNav";
-import MatrixRain from "@/components/MatrixRain";
 import "./globals.css";
 
 const rajdhani = Rajdhani({
@@ -24,7 +23,7 @@ const plexMono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: "Mastery Codex",
-  description: "A game-style status window for tracking mastery across coursework.",
+  description: "A study record for tracking mastery across coursework.",
 };
 
 export default function RootLayout({
@@ -39,7 +38,6 @@ export default function RootLayout({
       className={`${rajdhani.variable} ${plexSansThai.variable} ${plexMono.variable}`}
     >
       <body>
-        <MatrixRain />
         <TopNav />
         {children}
       </body>

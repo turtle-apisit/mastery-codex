@@ -1,71 +1,78 @@
 @layer base, components, utilities;
 
 :root{
-  --ground:#050d14;
-  --surface:#081722;
-  --surface-2:#0e212e;
-  --surface-3:#153241;
-  --border:#173442;
-  --border-strong:#2a5568;
+  /* Light, formal. Paper-and-ink rather than console-and-neon: a cool
+     off-white ground, white cards, one blue for live data, one bronze for
+     chrome. Every surface below is opaque — a study tool is read for long
+     stretches, and translucency over a busy backdrop is what made the dark
+     build hard to read. */
+  --ground:#f4f6fa;
+  --surface:#ffffff;
+  --surface-2:#eef1f6;
+  --surface-3:#e3e8ef;
+  --border:#e4e8ee;
+  --border-strong:#cbd3dd;
 
   /* Status colours in OKLCH so the tints below stay perceptually even
-     instead of drifting through grey. Token names are unchanged. */
-  --accent:oklch(82% 0.128 210);
-  --mastered:oklch(80% 0.152 152);
-  --training:oklch(76% 0.132 68);
-  --untrained:oklch(66% 0.155 18);
-  --locked:oklch(46% 0.031 232);
-  --rusty:oklch(68% 0.170 315);
+     instead of drifting through grey. Token names are unchanged; the
+     lightness is pulled down into the 50s so each one clears 4.5:1 against
+     a white card instead of glowing on black. */
+  --accent:oklch(52% 0.142 252);
+  --mastered:oklch(51% 0.118 156);
+  --training:oklch(55% 0.125 62);
+  --untrained:oklch(53% 0.183 26);
+  --locked:oklch(66% 0.014 250);
+  --rusty:oklch(52% 0.163 312);
 
-  /* Chrome is gold, live data is cyan. Warframe's star chart splits them the
-     same way: the frame, the counters and the buttons are warm metal, while
-     anything that is actually energy reads cool. Keeping that split means the
-     UI never competes with the graph for the same colour. */
-  --gold:oklch(81% 0.115 86);
-  --gold-dim:oklch(62% 0.082 86);
-  --gold-soft:color-mix(in oklch, var(--gold) 13%, transparent);
-  --gold-line:color-mix(in oklch, var(--gold) 34%, transparent);
+  /* Chrome is bronze, live data is blue. The dark build split the same two
+     roles as gold-vs-cyan; the split survives the theme change, both halves
+     just move down the lightness scale so they read on paper. */
+  --gold:oklch(54% 0.088 74);
+  --gold-dim:oklch(68% 0.055 74);
+  --gold-soft:color-mix(in oklch, var(--gold) 11%, transparent);
+  --gold-line:color-mix(in oklch, var(--gold) 38%, transparent);
 
-  --accent-soft:color-mix(in oklch, var(--accent) 14%, transparent);
-  --mastered-soft:color-mix(in oklch, var(--mastered) 14%, transparent);
-  --training-soft:color-mix(in oklch, var(--training) 14%, transparent);
-  --untrained-soft:color-mix(in oklch, var(--untrained) 14%, transparent);
+  --accent-soft:color-mix(in oklch, var(--accent) 10%, transparent);
+  --mastered-soft:color-mix(in oklch, var(--mastered) 10%, transparent);
+  --training-soft:color-mix(in oklch, var(--training) 10%, transparent);
+  --untrained-soft:color-mix(in oklch, var(--untrained) 10%, transparent);
   --locked-soft:color-mix(in oklch, var(--locked) 14%, transparent);
 
-  --text:#e7fbff;
-  --text-muted:#6fa8bd;
-  --text-faint:#3d6577;
+  --text:#16202b;
+  --text-muted:#4a5769;
+  --text-faint:#6b7787;
 
   --font-display:var(--font-rajdhani),var(--font-plex-mono),sans-serif;
   --font-body:var(--font-plex-sans-thai),sans-serif;
   --font-mono:var(--font-plex-mono),var(--font-plex-sans-thai),monospace;
 
   /* Fluid type scale, ~1.25 ratio. --step-5 is the display moment. */
-  --step--1:clamp(0.69rem, 0.67rem + 0.10vw, 0.75rem);
-  --step-0: clamp(0.84rem, 0.81rem + 0.15vw, 0.94rem);
-  --step-1: clamp(1.00rem, 0.95rem + 0.26vw, 1.17rem);
-  --step-2: clamp(1.20rem, 1.11rem + 0.44vw, 1.46rem);
-  --step-3: clamp(1.44rem, 1.29rem + 0.71vw, 1.83rem);
-  --step-4: clamp(1.73rem, 1.50rem + 1.12vw, 2.29rem);
-  --step-5: clamp(2.07rem, 1.71rem + 1.75vw, 3.50rem);
+  --step--1:clamp(0.75rem, 0.73rem + 0.10vw, 0.81rem);
+  --step-0: clamp(0.94rem, 0.91rem + 0.15vw, 1.00rem);
+  --step-1: clamp(1.06rem, 1.01rem + 0.26vw, 1.22rem);
+  --step-2: clamp(1.25rem, 1.16rem + 0.44vw, 1.50rem);
+  --step-3: clamp(1.48rem, 1.33rem + 0.71vw, 1.88rem);
+  --step-4: clamp(1.75rem, 1.52rem + 1.12vw, 2.31rem);
+  --step-5: clamp(2.00rem, 1.64rem + 1.75vw, 3.25rem);
 
   /* Spacing rhythm — every new rule uses these, never ad-hoc px. */
   --sp-1:4px;  --sp-2:8px;  --sp-3:12px; --sp-4:16px; --sp-5:24px;
   --sp-6:32px; --sp-7:48px; --sp-8:64px; --sp-9:72px;
 
-  /* Small but non-zero. The hard edge stays a signature via .cut, not a
-     default — bare 0-radius corners are what actually read as dated. */
-  --r-sm:4px; --r-md:8px; --r-lg:14px; --r-pill:999px;
+  /* Rounded, not notched. The clipped corner that used to be the signature
+     is gone with the rest of the game chrome — see .cut below. */
+  --r-sm:5px; --r-md:9px; --r-lg:14px; --r-pill:999px;
 
-  --e-1:0 1px 2px rgba(2,7,11,.4);
-  --e-2:0 4px 16px rgba(2,7,11,.45);
-  --e-3:0 12px 40px rgba(2,7,11,.55);
+  /* On paper a shadow is depth, not glow: short, soft, nearly neutral. */
+  --e-1:0 1px 2px rgba(22,32,43,.06);
+  --e-2:0 2px 8px rgba(22,32,43,.07);
+  --e-3:0 10px 28px rgba(22,32,43,.09);
 
-  /* There is a live canvas behind every panel, so the blur has something
-     real to work with. */
-  --glass-bg:color-mix(in oklch, var(--surface) 72%, transparent);
-  --glass-blur:blur(14px) saturate(1.3);
-  --glass-border:color-mix(in oklch, var(--accent) 18%, var(--border));
+  /* The names stay (dozens of rules reference them) but the glass is gone:
+     opaque cards, a plain border, no blur. */
+  --glass-bg:var(--surface);
+  --glass-blur:none;
+  --glass-border:var(--border-strong);
 }
 
 *{box-sizing:border-box;}
@@ -74,24 +81,30 @@ body{
   position:relative;
   z-index:0;
   margin:0;
-  background:
-    radial-gradient(ellipse 900px 500px at 15% -10%, rgba(79,214,240,.06), transparent 60%),
-    radial-gradient(ellipse 700px 500px at 100% 0%, rgba(79,176,138,.05), transparent 55%),
-    var(--ground);
+  background:var(--ground);
   color:var(--text);
   font-family:var(--font-body);
   line-height:1.5;
   -webkit-font-smoothing:antialiased;
 }
 
-a{color:var(--accent);}
+/* In @layer base so a component's own rule can override it. Unlayered, this
+   beat every layered declaration no matter how specific — which is why
+   `.btn.primary` rendered with a bronze border and blue text. */
+@layer base{
+  a{color:var(--accent);}
+}
 button{font-family:inherit;}
 
 ::selection{background:var(--accent-soft);color:var(--accent);}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 
-.cut{clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);}
-.cut-sm{clip-path:polygon(7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%,0 7px);}
+/* Was a notched sci-fi corner cut with clip-path. The clip is what made a
+   card with no `display` collapse to an invisible sliver (see CLAUDE.md), and
+   the notch was the loudest piece of game chrome in the app. Both classes now
+   just round the corner, so every call site keeps working. */
+.cut{border-radius:var(--r-lg);}
+.cut-sm{border-radius:var(--r-md);}
 
 .eyebrow{
   font-family:var(--font-mono);
@@ -112,204 +125,28 @@ button{font-family:inherit;}
   gap:var(--sp-4);
 }
 
-/* ---------- portrait fx ---------- */
-.portrait-fx{position:relative;z-index:0;flex:none;display:inline-block;}
+/* ---------- portrait frame ---------- */
+/* The portrait used to sit inside an aura, rotating light rays, floating
+   embers, twinkles, energy flames, shockwave rings, a summoning circle and a
+   pulsing targeting reticle. All of that was video-game chrome; the art
+   itself is the identity, so the art is what stayed. */
+.portrait-fx{position:relative;flex:none;display:inline-block;}
 .portrait{
   position:relative;
-  z-index:1;
   width:230px;
   height:340px;
   border:1px solid var(--border-strong);
+  border-radius:var(--r-lg);
   overflow:hidden;
-  background:transparent;
+  background:var(--surface-2);
+  box-shadow:var(--e-1);
 }
-.portrait img{width:100%;height:100%;object-fit:contain;display:block;position:relative;z-index:1;}
+.portrait img{width:100%;height:100%;object-fit:contain;display:block;}
 
-.portrait-glow{
-  position:absolute;
-  inset:-26px;
-  z-index:0;
-  background:radial-gradient(circle,rgba(40,150,195,.45) 0%,rgba(79,214,240,.16) 45%,transparent 72%);
-  filter:blur(7px);
-  animation:auraPulse 4.5s ease-in-out infinite, auraFlicker .7s steps(1) infinite;
-  pointer-events:none;
-}
-.twinkle{
-  position:absolute;
-  width:3px;height:3px;
-  background:#d6f7ff;
-  border-radius:50%;
-  box-shadow:0 0 7px 1.5px rgba(214,247,255,.9);
-  z-index:2;
-  pointer-events:none;
-  animation:twinkle 1.9s ease-in-out infinite;
-}
-.twinkle.t1{top:6%;left:10%;animation-duration:1.6s;animation-delay:0s;}
-.twinkle.t2{top:14%;left:88%;animation-duration:2.1s;animation-delay:.4s;}
-.twinkle.t3{top:42%;left:-4%;animation-duration:1.8s;animation-delay:.9s;}
-.twinkle.t4{top:58%;left:96%;animation-duration:2.3s;animation-delay:.2s;}
-.twinkle.t5{top:82%;left:6%;animation-duration:1.7s;animation-delay:1.2s;}
-.twinkle.t6{top:88%;left:82%;animation-duration:2s;animation-delay:.7s;}
-.ember{
-  position:absolute;
-  width:5px;height:5px;
-  border-radius:50%;
-  bottom:8%;
-  background:radial-gradient(circle,var(--accent),transparent 70%);
-  animation:emberFloat 5s ease-in infinite;
-  pointer-events:none;
-  z-index:2;
-}
-.ember.e1{left:12%;width:4px;height:4px;--drift:-18px;animation-duration:4.4s;animation-delay:0s;}
-.ember.e2{left:26%;width:6px;height:6px;--drift:12px;animation-duration:5.6s;animation-delay:.9s;background:radial-gradient(circle,#7fe0ff,transparent 70%);}
-.ember.e3{left:40%;width:3px;height:3px;--drift:-8px;animation-duration:4.9s;animation-delay:1.8s;}
-.ember.e4{left:54%;width:5px;height:5px;--drift:14px;animation-duration:6.2s;animation-delay:.4s;background:radial-gradient(circle,#7fe0ff,transparent 70%);}
-.ember.e5{left:66%;width:4px;height:4px;--drift:-12px;animation-duration:5s;animation-delay:2.6s;}
-.ember.e6{left:76%;width:6px;height:6px;--drift:10px;animation-duration:5.8s;animation-delay:1.3s;background:radial-gradient(circle,#7fe0ff,transparent 70%);}
-.ember.e7{left:86%;width:3px;height:3px;--drift:-14px;animation-duration:4.6s;animation-delay:3.2s;}
-.ember.e8{left:20%;width:4px;height:4px;--drift:16px;animation-duration:6.6s;animation-delay:3.9s;background:radial-gradient(circle,#7fe0ff,transparent 70%);}
-
-.portrait-rays{
-  position:absolute;inset:-64px;z-index:0;
-  border-radius:50%;
-  background:conic-gradient(from 0deg,
-    transparent 0deg, rgba(79,214,240,.14) 6deg, transparent 14deg, transparent 42deg,
-    rgba(40,150,195,.12) 48deg, transparent 56deg, transparent 84deg,
-    rgba(79,214,240,.14) 90deg, transparent 98deg, transparent 126deg,
-    rgba(40,150,195,.12) 132deg, transparent 140deg, transparent 168deg,
-    rgba(79,214,240,.14) 174deg, transparent 182deg, transparent 210deg,
-    rgba(40,150,195,.12) 216deg, transparent 224deg, transparent 252deg,
-    rgba(79,214,240,.14) 258deg, transparent 266deg, transparent 294deg,
-    rgba(40,150,195,.12) 300deg, transparent 308deg, transparent 336deg,
-    rgba(79,214,240,.12) 342deg, transparent 350deg);
-  filter:blur(2px);
-  animation:spin 46s linear infinite;
-  pointer-events:none;
-}
-.ssj-flame{position:absolute;width:10px;height:46px;pointer-events:none;z-index:0;}
-.ssj-flame i{
-  display:block;width:100%;height:100%;
-  background:linear-gradient(180deg,rgba(79,214,240,.55),rgba(79,214,240,0));
-  clip-path:polygon(50% 0%,100% 40%,70% 38%,85% 100%,50% 55%,15% 100%,30% 38%,0% 40%);
-  transform-origin:50% 100%;
-  animation:ssjFlicker 1.6s ease-in-out infinite;
-}
-.ssj-flame.f1{left:50%;top:-6%;transform:translateX(-50%) rotate(0deg);}
-.ssj-flame.f2{left:78%;top:2%;transform:rotate(38deg);}
-.ssj-flame.f3{left:18%;top:2%;transform:rotate(-38deg);}
-.ssj-flame.f4{left:92%;top:30%;transform:rotate(72deg);}
-.ssj-flame.f5{left:4%;top:30%;transform:rotate(-72deg);}
-.ssj-flame.f6{left:82%;top:58%;transform:rotate(100deg);}
-.ssj-flame.f7{left:14%;top:58%;transform:rotate(-100deg);}
-.ssj-flame.f2 i{animation-delay:.3s;}
-.ssj-flame.f3 i{animation-delay:.6s;}
-.ssj-flame.f4 i{animation-delay:.15s;}
-.ssj-flame.f5 i{animation-delay:.45s;}
-.ssj-flame.f6 i{animation-delay:.75s;}
-.ssj-flame.f7 i{animation-delay:.9s;}
-
-.ssj-spark{
-  position:absolute;width:13px;height:20px;z-index:2;pointer-events:none;opacity:0;
-  background:linear-gradient(180deg,rgba(214,247,255,.9),rgba(79,214,240,.2));
-  clip-path:polygon(40% 0%,100% 0%,55% 45%,90% 45%,20% 100%,40% 55%,0% 55%);
-  animation:sparkFlash 2.8s ease-in-out infinite;
-}
-.ssj-spark.s1{left:6%;top:20%;transform:rotate(-12deg);animation-delay:0s;}
-.ssj-spark.s2{left:88%;top:14%;transform:rotate(18deg);animation-delay:1s;}
-.ssj-spark.s3{left:80%;top:62%;transform:rotate(-8deg);animation-delay:1.8s;}
-
-.ssj-shock{
-  position:absolute;left:50%;bottom:0%;
-  width:60px;height:60px;
-  border:2px solid rgba(79,214,240,.5);
-  border-radius:50%;
-  z-index:0;pointer-events:none;opacity:0;
-  animation:shockPulse 3.4s ease-out infinite;
-}
-.ssj-shock.sh2{animation-delay:1.7s;}
-
-.summon-circle{
-  position:absolute;left:50%;bottom:2%;
-  width:210px;height:76px;
-  border-radius:50%;
-  border:1.5px dashed rgba(79,214,240,.42);
-  z-index:0;
-  pointer-events:none;
-  animation:spinGround 16s linear infinite;
-}
-.summon-circle.inner{
-  width:156px;height:54px;
-  border-style:dotted;
-  border-color:rgba(40,150,195,.5);
-  animation:spinGroundRev 11s linear infinite;
-}
-.reticle{position:absolute;inset:-15px;z-index:2;pointer-events:none;}
-.reticle span{
-  position:absolute;width:16px;height:16px;
-  border:2px solid var(--accent);
-  animation:reticlePulse 2.4s ease-in-out infinite;
-}
-.reticle .tl{top:0;left:0;border-right:none;border-bottom:none;}
-.reticle .tr{top:0;right:0;border-left:none;border-bottom:none;animation-delay:.2s;}
-.reticle .bl{bottom:0;left:0;border-right:none;border-top:none;animation-delay:.4s;}
-.reticle .br{bottom:0;right:0;border-left:none;border-top:none;animation-delay:.6s;}
-
-@keyframes auraPulse{
-  0%,100%{transform:scale(1);opacity:.5;}
-  50%{transform:scale(1.16);opacity:.9;}
-}
-@keyframes auraFlicker{
-  0%,100%{filter:blur(7px) brightness(1);}
-  15%{filter:blur(7px) brightness(1.2);}
-  30%{filter:blur(7px) brightness(.88);}
-  45%{filter:blur(7px) brightness(1.25);}
-  60%{filter:blur(7px) brightness(.95);}
-  75%{filter:blur(7px) brightness(1.15);}
-  90%{filter:blur(7px) brightness(.92);}
-}
-@keyframes twinkle{
-  0%,100%{opacity:0;transform:scale(.3);}
-  50%{opacity:1;transform:scale(1.4);}
-}
-@keyframes ssjFlicker{
-  0%,100%{opacity:.32;transform:scaleY(.85);}
-  35%{opacity:.65;transform:scaleY(1.1);}
-  60%{opacity:.4;transform:scaleY(.9);}
-  85%{opacity:.6;transform:scaleY(1.05);}
-}
-@keyframes sparkFlash{
-  0%,88%,100%{opacity:0;}
-  90%{opacity:.85;}
-  93%{opacity:.15;}
-  95%{opacity:.8;}
-  97%{opacity:0;}
-}
-@keyframes shockPulse{
-  0%{transform:translate(-50%,10%) scale(.2);opacity:.5;}
-  70%{opacity:.12;}
-  100%{transform:translate(-50%,10%) scale(2.6);opacity:0;}
-}
+/* Still used by .bar-shine, the one animation that survived. */
 @keyframes shineSweep{
   0%,15%{transform:translateX(-120%) rotate(18deg);}
   55%,100%{transform:translateX(260%) rotate(18deg);}
-}
-@keyframes emberFloat{
-  0%{transform:translate(0,0);opacity:0;}
-  12%{opacity:.9;}
-  85%{opacity:.35;}
-  100%{transform:translate(var(--drift,10px),-150px);opacity:0;}
-}
-@keyframes spin{ to{ transform:rotate(360deg); } }
-@keyframes spinGround{ from{ transform:translateX(-50%) rotate(0deg); } to{ transform:translateX(-50%) rotate(360deg); } }
-@keyframes spinGroundRev{ from{ transform:translateX(-50%) rotate(0deg); } to{ transform:translateX(-50%) rotate(-360deg); } }
-@keyframes reticlePulse{ 0%,100%{ opacity:.45; } 50%{ opacity:1; } }
-
-.matrix-rain{
-  position:fixed;
-  inset:0;
-  z-index:-1;
-  opacity:.18;
-  pointer-events:none;
 }
 
 /* ---------- character hero ---------- */
@@ -319,8 +156,9 @@ button{font-family:inherit;}
     z-index:0;
     isolation:isolate;
     overflow:hidden;
-    border:1px solid var(--glass-border);
-    box-shadow:var(--e-3);
+    background:var(--surface);
+    border:1px solid var(--border-strong);
+    box-shadow:var(--e-2);
     padding:var(--sp-7) var(--sp-6) var(--sp-6);
     display:grid;
     grid-template-columns:auto 1fr;
@@ -332,17 +170,24 @@ button{font-family:inherit;}
     position:absolute;inset:0;z-index:-2;
     pointer-events:none;
   }
-  .hero-art img{width:100%;height:100%;object-fit:cover;object-position:center 32%;}
+  /* The art is a watermark now, not a backdrop to read over. On a light
+     ground a full-strength photo behind dark text fails contrast outright,
+     so it is desaturated, dropped to a quarter opacity, and covered by a
+     near-opaque wash — legible first, atmospheric second. */
+  .hero-art img{
+    width:100%;height:100%;object-fit:cover;object-position:center 32%;
+    opacity:.22;filter:grayscale(.5);
+  }
   .hero-art::after{
     content:"";position:absolute;inset:0;
     background:
       linear-gradient(180deg,
-        color-mix(in oklch, var(--ground) 35%, transparent) 0%,
-        color-mix(in oklch, var(--ground) 72%, transparent) 45%,
-        color-mix(in oklch, var(--ground) 94%, transparent) 100%),
+        color-mix(in oklch, var(--surface) 55%, transparent) 0%,
+        color-mix(in oklch, var(--surface) 82%, transparent) 55%,
+        color-mix(in oklch, var(--surface) 96%, transparent) 100%),
       linear-gradient(90deg,
-        color-mix(in oklch, var(--ground) 80%, transparent) 0%,
-        transparent 55%);
+        color-mix(in oklch, var(--surface) 78%, transparent) 0%,
+        transparent 60%);
   }
   .hero-id{min-width:0;padding-bottom:var(--sp-2);}
   .hero-eyebrow{
@@ -374,15 +219,24 @@ button{font-family:inherit;}
     background:var(--accent-soft);
   }
   @media (max-width:720px){
-    .hero{grid-template-columns:1fr;justify-items:center;text-align:center;padding:var(--sp-6) var(--sp-4);}
+    .hero{grid-template-columns:1fr;justify-items:center;text-align:center;padding:var(--sp-5) var(--sp-4);gap:var(--sp-4);}
     .hero-meta{justify-content:center;}
+    /* 230x340 is over 40% of a phone's viewport height on its own */
+    .portrait{width:164px;height:242px;}
   }
 
   /* ---------- stat bento ---------- */
+  /* minmax(240px,...) meant exactly one card per row on any phone, so four
+     short stat cards ate four full screens before the graph. min() lets the
+     track shrink to a real two-up on a 390px viewport and still relax to
+     240px-wide cards on a desktop. */
   .bento{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));
     gap:var(--sp-4);
+  }
+  @media (min-width:760px){
+    .bento{grid-template-columns:repeat(auto-fit,minmax(240px,1fr));}
   }
   .tile{
     position:relative;
@@ -415,6 +269,10 @@ button{font-family:inherit;}
     color:var(--text-faint);font-weight:400;letter-spacing:.08em;
   }
   .tile-note{font-size:var(--step--1);color:var(--text-muted);}
+  @media (max-width:560px){
+    .tile{padding:var(--sp-4);gap:var(--sp-1);}
+    .tile-figure{font-size:var(--step-3);}
+  }
   .tile-note strong{color:var(--untrained);font-weight:600;}
   .tile.boss{border-color:var(--untrained);background:var(--untrained-soft);}
   .tile.boss .tile-figure{color:var(--untrained);}
@@ -534,6 +392,13 @@ button{font-family:inherit;}
     .filter-row::-webkit-scrollbar{display:none;}
     .filter-btn{flex:none;scroll-snap-align:start;}
     .filter-sep{flex:none;height:20px;align-self:center;}
+    /* The strip scrolls by design, but a pill cut flat by the viewport edge
+       reads as a layout bug. Fading the last few pixels says "more this way"
+       instead. */
+    .filter-row{
+      -webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent 100%);
+      mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent 100%);
+    }
   }
 
   .filter-note{
@@ -561,6 +426,7 @@ button{font-family:inherit;}
     flex:1;min-width:0;
     font-family:var(--font-mono);font-size:var(--step--1);
     letter-spacing:.12em;text-transform:uppercase;color:var(--text);
+    overflow-wrap:anywhere;
   }
   .subject-meta{font-family:var(--font-mono);font-size:var(--step--1);color:var(--text-faint);flex:none;}
   .subject-meta i{font-style:normal;}
@@ -585,43 +451,45 @@ button{font-family:inherit;}
     height:clamp(430px, 72vh, 780px);
     overflow:hidden;
     touch-action:pan-y; /* nothing to pan here, so the page keeps scrolling */
+    /* Three tinted radials used to sit here. Each was a dark hue at 5-9%
+       over black, which reads as atmosphere; the same mix over a white card
+       reads as a coffee stain. One faint cool wash is all this needs. */
     background:
-      radial-gradient(ellipse 55% 45% at 50% 50%, color-mix(in oklch, var(--gold) 6%, transparent), transparent 70%),
-      radial-gradient(ellipse 90% 70% at 22% 28%, color-mix(in oklch, var(--accent) 9%, transparent), transparent 72%),
-      radial-gradient(ellipse 80% 65% at 82% 76%, color-mix(in oklch, var(--rusty) 5%, transparent), transparent 70%),
-      var(--ground);
+      radial-gradient(ellipse 85% 70% at 50% 45%, var(--surface), transparent 75%),
+      var(--surface-2);
+    border-radius:var(--r-md);
   }
-  /* corner vignette: the reference frame is markedly darker at the edges,
-     which is what keeps the eye in the middle */
-  .system-stage::after{
-    content:"";position:absolute;inset:0;pointer-events:none;
-    background:radial-gradient(ellipse 78% 78% at 50% 50%, transparent 42%, var(--ground) 100%);
-    opacity:.85;
-  }
+  /* The vignette pulled the eye to the middle by darkening the edges. Light
+     has no equivalent move — whitening the edges just deletes whatever body
+     drifted there — so it is gone. */
   .system-stage.dragging{cursor:grabbing;}
   .system-svg{position:relative;z-index:1;display:block;width:100%;height:100%;}
 
+  /* Instrument furniture is drawn in neutral grey now. Bronze at 7-26% is a
+     muddy tan on paper; the chrome colour is reserved for marks that are
+     actually chrome (the corner brackets, the back button). */
   .orbit{
     fill:none;
-    stroke:color-mix(in oklch, var(--gold) 15%, transparent);
+    stroke:color-mix(in oklch, var(--border-strong) 70%, transparent);
     stroke-width:1;
     stroke-dasharray:2 9;
   }
   .orbit-main{
-    stroke:color-mix(in oklch, var(--gold) 26%, transparent);
+    stroke:var(--border-strong);
     stroke-dasharray:3 7;
   }
-  .ecliptic{stroke:color-mix(in oklch, var(--gold) 12%, transparent);stroke-width:1;}
-  .spoke{stroke:color-mix(in oklch, var(--gold) 7%, transparent);stroke-width:1;}
+  .ecliptic{stroke:color-mix(in oklch, var(--border-strong) 55%, transparent);stroke-width:1;}
+  .spoke{stroke:color-mix(in oklch, var(--border-strong) 40%, transparent);stroke-width:1;}
   /* No transition on the parallax layers: the rAF loop writes these every
      frame and eases them itself, so a CSS interpolation here was being
      restarted every 16ms and never allowed to finish. */
   .graticule{will-change:transform;}
 
   .core{will-change:transform;}
+  /* A glow is a dark-theme effect. On paper the centre is just a small solid
+     mark. */
   .core-spark{
     fill:var(--gold);
-    filter:drop-shadow(0 0 14px var(--gold));
     animation:core-breathe 5.5s ease-in-out infinite;
   }
   @keyframes core-breathe{
@@ -634,21 +502,22 @@ button{font-family:inherit;}
   .planet.grabbed{cursor:grabbing;}
   .planet:focus{outline:none;}
   .planet-halo{
-    fill:color-mix(in oklch, var(--accent) 7%, transparent);
+    fill:color-mix(in oklch, var(--accent) 6%, transparent);
     transition:fill .25s ease;
   }
 
-  /* holographic shell: dark and translucent, so the wireframe inside reads
-     through it. A lit marble would look like clip art next to the graph. */
+  /* The shell was a translucent dark disc letting the wireframe read through
+     it. Inverted: an opaque white disc with a real edge, so a body stays a
+     body against a light stage instead of dissolving into it. */
   .planet-body{
-    fill:color-mix(in oklch, var(--ground) 62%, transparent);
-    stroke:color-mix(in oklch, var(--gold) 38%, transparent);
+    fill:var(--surface);
+    stroke:var(--border-strong);
     stroke-width:1;
     transition:stroke .25s ease;
   }
   .planet-wire ellipse{
     fill:none;
-    stroke:color-mix(in oklch, var(--accent) 26%, transparent);
+    stroke:color-mix(in oklch, var(--accent) 32%, transparent);
     stroke-width:.75;
     transition:stroke .25s ease;
   }
@@ -657,7 +526,7 @@ button{font-family:inherit;}
     fill:none;
     stroke:var(--accent);
     stroke-width:1.4;
-    opacity:.5;
+    opacity:.65;
     stroke-linecap:round;
     transition:opacity .25s ease,stroke .25s ease;
   }
@@ -669,8 +538,8 @@ button{font-family:inherit;}
 
   /* bearing ring — instrument furniture, counter-rotating against the moon */
   .tick-ring{animation:tick-spin 64s linear infinite;transform-origin:0 0;}
-  .tick{stroke:color-mix(in oklch, var(--gold) 22%, transparent);stroke-width:1;}
-  .tick.major{stroke:color-mix(in oklch, var(--gold) 46%, transparent);stroke-width:1.2;}
+  .tick{stroke:color-mix(in oklch, var(--border-strong) 75%, transparent);stroke-width:1;}
+  .tick.major{stroke:var(--gold-dim);stroke-width:1.2;}
   @keyframes tick-spin{to{transform:rotate(360deg);}}
 
   .planet-sat{animation:sat-orbit 13s linear infinite;transform-origin:0 0;}
@@ -679,7 +548,7 @@ button{font-family:inherit;}
 
   .planet-track{
     fill:none;
-    stroke:color-mix(in oklch, var(--gold) 16%, transparent);
+    stroke:var(--surface-3);
     stroke-width:2.5;
   }
   .planet-seg{fill:none;stroke-width:2.5;stroke-linecap:round;}
@@ -704,7 +573,7 @@ button{font-family:inherit;}
     transition:fill .25s ease;
   }
   .planet-meta{
-    fill:var(--gold-dim);
+    fill:var(--text-faint);
     font-family:var(--font-mono);
     letter-spacing:.16em;
     text-anchor:middle;
@@ -734,12 +603,22 @@ button{font-family:inherit;}
   .system-chrome .bl{bottom:10px;left:10px;border-right:0;border-top:0;}
   .system-chrome .br{bottom:10px;right:10px;border-left:0;border-top:0;}
 
+  /* Centred at the bottom it sat exactly where a body's label lands when it
+     drifts low, and the two overprinted. Tucked into the bottom-left corner
+     instead, inside the frame bracket. */
   .system-caption{
-    position:absolute;left:50%;bottom:12px;transform:translateX(-50%);
+    position:absolute;left:38px;bottom:12px;
     margin:0;z-index:2;pointer-events:none;
+    max-width:calc(100% - 76px);
     font-family:var(--font-mono);font-size:9.5px;
-    letter-spacing:.24em;text-transform:uppercase;
-    color:var(--gold-dim);
+    letter-spacing:.18em;text-transform:uppercase;
+    color:var(--text-faint);
+  }
+  /* On a phone it wraps to two lines and lands on top of whichever body has
+     drifted to the bottom of the stage. The note above the chart already says
+     the same thing in prose. */
+  @media (max-width:560px){
+    .system-caption{display:none;}
   }
 
   .back-btn{
@@ -767,9 +646,9 @@ button{font-family:inherit;}
     cursor:grab;
     touch-action:none; /* we own the gesture: browser pan/zoom must not fight it */
     background:
-      radial-gradient(ellipse 70% 60% at 30% 30%, color-mix(in oklch, var(--accent) 7%, transparent), transparent 70%),
-      radial-gradient(ellipse 60% 70% at 80% 70%, color-mix(in oklch, var(--rusty) 5%, transparent), transparent 70%),
-      var(--ground);
+      radial-gradient(ellipse 85% 70% at 50% 45%, var(--surface), transparent 75%),
+      var(--surface-2);
+    border-radius:var(--r-md);
   }
   .neural-stage.grabbing{cursor:grabbing;}
   .neural-svg{display:block;width:100%;height:100%;user-select:none;}
@@ -1063,6 +942,10 @@ button{font-family:inherit;}
 }
 
 /* ---------- panel base ---------- */
+/* Filenames, slugs and source paths all land inside panels, and every one of
+   them is a single token long enough to push a phone's layout wider than its
+   screen. */
+.panel a,.panel h3,.panel li{overflow-wrap:anywhere;min-width:0;}
 .panel{
   container-type:inline-size;
   background:var(--glass-bg);
@@ -1170,6 +1053,24 @@ button{font-family:inherit;}
 }
 .tab:hover{color:var(--text);}
 .tab.active{color:var(--accent);border-color:var(--border-strong);background:var(--surface-2);}
+/* Five tabs wrapped to a second row on every phone, doubling the height of a
+   sticky header. One scrolling row instead — same treatment the inventory
+   filters already use. */
+@media (max-width:640px){
+  /* Brand and tabs share one row instead of stacking — an 81px sticky header
+     on an 844px screen is a tenth of the viewport spent on chrome. */
+  .topnav-inner{padding:var(--sp-2) var(--sp-4);gap:var(--sp-3);flex-wrap:nowrap;}
+  .brand{flex:none;}
+  .tabs{
+    min-width:0;
+    flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;
+    margin-inline:0 calc(var(--sp-4) * -1);padding-inline:0 var(--sp-4);
+    -webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 24px),transparent 100%);
+    mask-image:linear-gradient(90deg,#000 calc(100% - 24px),transparent 100%);
+  }
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{flex:none;padding:var(--sp-2) var(--sp-3);}
+}
 
 /* ---------- cast ---------- */
 @layer components{
@@ -1487,12 +1388,14 @@ button{font-family:inherit;}
     align-self:flex-start;
     font-family:var(--font-mono);font-size:var(--step--1);
     letter-spacing:.1em;text-transform:uppercase;
-    color:var(--ground);background:var(--gold);
-    border:1px solid var(--gold);border-radius:var(--r-pill);
+    /* Filled means accent, outlined means bronze — the same split every other
+       control on the page follows. A solid bronze slab on white read as mud. */
+    color:var(--surface);background:var(--accent);
+    border:1px solid var(--accent);border-radius:var(--r-pill);
     padding:var(--sp-3) var(--sp-5);min-height:40px;
     cursor:pointer;transition:filter .15s ease;
   }
-  .fa-results-cta:hover{filter:brightness(1.08);}
+  .fa-results-cta:hover{filter:brightness(1.1);}
 
   /* ---------- unit view ---------- */
   .fa-unit-view{display:flex;flex-direction:column;gap:var(--sp-4);}
@@ -1710,7 +1613,7 @@ button{font-family:inherit;}
     font-family:var(--font-mono);font-size:10px;letter-spacing:.12em;
     text-transform:uppercase;color:var(--text-faint);
   }
-  .field-hint{font-size:var(--step--1);color:var(--text-faint);}
+  .field-hint{font-size:var(--step--1);color:var(--text-faint);overflow-wrap:anywhere;}
   .field-hint.error{color:var(--untrained);}
 
   .input,.select{
@@ -1778,6 +1681,13 @@ button{font-family:inherit;}
     transition:border-color .15s ease, background .15s ease;
   }
   .course-list-card .subject-head{border-bottom:0;cursor:inherit;}
+  /* The dates and the status tag don't shrink, so on a phone the course name
+     was squeezed into a ~50px column and its words printed straight over
+     them. Give the name its own row instead. */
+  @media (max-width:560px){
+    .course-list-card .subject-head{flex-wrap:wrap;gap:var(--sp-2);}
+    .course-list-card .subject-name{flex:1 0 100%;}
+  }
   a.course-list-card:hover{
     border-color:var(--accent);
     background:color-mix(in oklch, var(--surface-2) 60%, transparent);
@@ -1791,11 +1701,16 @@ button{font-family:inherit;}
      as a scannable list of names instead of one continuous wall of text. */
   .technique-group{margin-top:var(--sp-6);}
   .technique-group:first-child{margin-top:0;}
+  /* A deck filename is one unbroken token in a mono face with extra letter
+     spacing. Unwrapped it ran past the viewport and widened the whole
+     document, which is what made this page scroll sideways on a phone. */
   .technique-group-title{
     display:flex;align-items:center;gap:var(--sp-2);cursor:pointer;
+    flex-wrap:wrap;
     list-style:none;
     font-family:var(--font-mono);font-size:var(--step--1);
     letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);
+    overflow-wrap:anywhere;
     margin:0 0 var(--sp-3);
   }
   .technique-group-title::-webkit-details-marker{display:none;}
@@ -1842,9 +1757,6 @@ button{font-family:inherit;}
 /* Kept last: these overrides must win over every rule above. */
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto;}
-  .portrait-glow,.ember{animation:none;}
-  .portrait-rays,.summon-circle,.reticle span,.twinkle{animation:none;}
-  .ssj-flame i,.ssj-spark,.ssj-shock{animation:none;opacity:0;}
   .cast-hero{animation:none;}
   .bar-eased{transition:none;}
   .bar-shine{animation:none;opacity:0;}

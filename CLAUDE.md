@@ -229,9 +229,10 @@ npm run build   # production build; also typechecks
 npm run lint    # eslint
 ```
 
-`npm run lint` currently reports 3 pre-existing problems in `AnimatedBar.tsx`,
-`PortraitFx.tsx` and `useCountUp.ts`. Leave those alone unless you are fixing
-them deliberately; just do not add more.
+`npm run lint` currently reports 2 pre-existing problems, in `AnimatedBar.tsx`
+and `useCountUp.ts`. (It was 3 — `PortraitFx.tsx`'s went away when the theme
+pass rewrote that component, not because anyone fixed the rule.) Leave those
+alone unless you are fixing them deliberately; just do not add more.
 
 ## Final Approach exams
 
