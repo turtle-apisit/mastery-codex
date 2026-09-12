@@ -42,9 +42,18 @@ exists — it is slow and you lose the ability to grep back across the deck.
 Convert the whole file once, then work from the text.
 
 ```bash
-# PDF -> text, preserving column layout (poppler; already on PATH here)
+# PDF -> text, preserving column layout (poppler)
 pdftotext -layout "input.pdf" "output.txt"
+```
 
+`pdftotext` isn't guaranteed to be pre-installed — a fresh session container may
+need `apt-get update && apt-get install -y poppler-utils` first. If that's not
+available either, fall back to the `pdf` skill (`pypdf`/`pdfplumber` in
+Python); on some containers the system `cryptography` package is broken
+(`ModuleNotFoundError: No module named '_cffi_backend'`) — fix with
+`pip3 install --ignore-installed cffi cryptography` before retrying.
+
+```bash
 # PPTX -> text. There is no pptx reader; unzip the slide XML and strip tags.
 unzip -q -o "input.pptx" "ppt/slides/*.xml" -d /tmp/pptx
 for i in $(seq 1 200); do
@@ -67,6 +76,20 @@ Then check `wc -w` on every output before reading any of it. Two signals:
 Two files with near-identical word counts in one folder are usually one deck
 exported twice (`slides.pdf` / `slides_full.pdf`). Diff them, keep one, and list
 both in `source` only if they genuinely differ.
+
+### Diagram-heavy slides: don't trust the extracted text
+
+A slide with a real diagram — a comparison chart, a quadrant model, a labeled
+process graphic — often extracts as near-empty, or as text fragments in the
+wrong order with no indication of which label belongs to which part of the
+image (a 4-quadrant model can extract as one run-on paragraph with the
+quadrant names missing entirely, its content silently reassigned to whichever
+quadrant the PDF's internal draw order happened to put it near). A low word
+count or a paragraph that reads like fragments stitched together out of order
+is the signal. For those slides, use the Read tool directly on the PDF with
+the `pages` parameter (a specific page or small range, max 20 per call) to
+view the actual rendered image, and build the note's `explanation` from what
+the diagram actually shows — not from the garbled text.
 
 ### Then decompose
 

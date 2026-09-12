@@ -158,6 +158,187 @@ export type Database = {
           },
         ]
       }
+      exam_attempts: {
+        Row: {
+          answered_at: string
+          chosen_option: number | null
+          content_score: number | null
+          exam_item_id: string
+          feedback: string | null
+          graded_at: string | null
+          graded_by: string | null
+          id: string
+          is_correct: boolean | null
+          writing_clarity: number | null
+          writing_precision: number | null
+          written_answer: string | null
+        }
+        Insert: {
+          answered_at?: string
+          chosen_option?: number | null
+          content_score?: number | null
+          exam_item_id: string
+          feedback?: string | null
+          graded_at?: string | null
+          graded_by?: string | null
+          id?: string
+          is_correct?: boolean | null
+          writing_clarity?: number | null
+          writing_precision?: number | null
+          written_answer?: string | null
+        }
+        Update: {
+          answered_at?: string
+          chosen_option?: number | null
+          content_score?: number | null
+          exam_item_id?: string
+          feedback?: string | null
+          graded_at?: string | null
+          graded_by?: string | null
+          id?: string
+          is_correct?: boolean | null
+          writing_clarity?: number | null
+          writing_precision?: number | null
+          written_answer?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_attempts_exam_item_id_fkey"
+            columns: ["exam_item_id"]
+            isOneToOne: true
+            referencedRelation: "exam_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exam_items: {
+        Row: {
+          correct_option: number | null
+          created_at: string
+          exam_set_id: string
+          id: string
+          item_type: string
+          model_answer: string | null
+          options: Json | null
+          position: number
+          question: string
+          rubric: string | null
+          source_basis: string
+          technique_id: string
+        }
+        Insert: {
+          correct_option?: number | null
+          created_at?: string
+          exam_set_id: string
+          id?: string
+          item_type: string
+          model_answer?: string | null
+          options?: Json | null
+          position: number
+          question: string
+          rubric?: string | null
+          source_basis?: string
+          technique_id: string
+        }
+        Update: {
+          correct_option?: number | null
+          created_at?: string
+          exam_set_id?: string
+          id?: string
+          item_type?: string
+          model_answer?: string | null
+          options?: Json | null
+          position?: number
+          question?: string
+          rubric?: string | null
+          source_basis?: string
+          technique_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_items_exam_set_id_fkey"
+            columns: ["exam_set_id"]
+            isOneToOne: false
+            referencedRelation: "exam_sets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exam_items_technique_id_fkey"
+            columns: ["technique_id"]
+            isOneToOne: false
+            referencedRelation: "techniques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exam_set_reviews: {
+        Row: {
+          central_agent: string
+          central_verdict: string
+          exam_set_id: string
+          id: string
+          note: string | null
+          nova_verdict: string
+          reviewed_at: string
+        }
+        Insert: {
+          central_agent: string
+          central_verdict: string
+          exam_set_id: string
+          id?: string
+          note?: string | null
+          nova_verdict: string
+          reviewed_at?: string
+        }
+        Update: {
+          central_agent?: string
+          central_verdict?: string
+          exam_set_id?: string
+          id?: string
+          note?: string | null
+          nova_verdict?: string
+          reviewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_set_reviews_exam_set_id_fkey"
+            columns: ["exam_set_id"]
+            isOneToOne: false
+            referencedRelation: "exam_sets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exam_sets: {
+        Row: {
+          created_at: string
+          generated_by: string
+          id: string
+          set_number: number
+          status: string
+          subject: string
+          targeting_note: string | null
+        }
+        Insert: {
+          created_at?: string
+          generated_by?: string
+          id?: string
+          set_number: number
+          status?: string
+          subject: string
+          targeting_note?: string | null
+        }
+        Update: {
+          created_at?: string
+          generated_by?: string
+          id?: string
+          set_number?: number
+          status?: string
+          subject?: string
+          targeting_note?: string | null
+        }
+        Relationships: []
+      }
       generated_homework: {
         Row: {
           correct_answer_explanation: string
@@ -481,12 +662,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -510,11 +691,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -535,11 +716,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -560,11 +741,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -577,11 +758,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
