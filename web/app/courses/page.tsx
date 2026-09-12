@@ -41,7 +41,7 @@ export default function CoursesPage() {
       </section>
 
       <section className="fa-subject-list">
-        {courses === null && <p className="field-hint">Loading…</p>}
+        {courses === null && <p className="field-hint loading">Loading…</p>}
         {courses !== null && courses.length === 0 && (
           <p className="field-hint">No courses yet — add your first one.</p>
         )}

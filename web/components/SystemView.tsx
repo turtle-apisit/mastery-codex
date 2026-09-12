@@ -382,9 +382,12 @@ export default function SystemView({
     >
       <svg className="system-svg" viewBox={`0 0 ${w} ${h}`}>
         <defs>
+          {/* A wide bronze glow reads as atmosphere on black and as a stain
+              on paper. Kept as a tight, faint halo around the centre mark
+              rather than a bloom spanning a third of the stage. */}
           <radialGradient id="core-glow">
-            <stop offset="0%" stopColor="var(--gold)" stopOpacity="0.85" />
-            <stop offset="35%" stopColor="var(--gold)" stopOpacity="0.22" />
+            <stop offset="0%" stopColor="var(--gold)" stopOpacity="0.20" />
+            <stop offset="55%" stopColor="var(--gold)" stopOpacity="0.07" />
             <stop offset="100%" stopColor="var(--gold)" stopOpacity="0" />
           </radialGradient>
           {specs.map((s) => {
@@ -412,7 +415,7 @@ export default function SystemView({
             layerRefs.current.core = el;
           }}
         >
-          <circle cx={cx} cy={cy} r={coreR * 3} fill="url(#core-glow)" />
+          <circle cx={cx} cy={cy} r={coreR * 0.85} fill="url(#core-glow)" />
           <circle cx={cx} cy={cy} r={coreR * 0.16} className="core-spark" />
         </g>
 
