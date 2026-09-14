@@ -552,6 +552,24 @@ button{font-family:inherit;}
     stroke-width:2.5;
   }
   .planet-seg{fill:none;stroke-width:2.5;stroke-linecap:round;}
+  /* The chart's one signature moment: each ring draws itself in on entry, at
+     a constant angular speed, so a band's duration is its share of the
+     subject. SystemView writes --seg-len (arc length, from r × θ), --seg-dur
+     and --seg-delay per segment.
+
+     It is a keyframe with `forwards`, not a JS-gated class, so it always
+     completes on its own — the rule in DESIGN.md is about never leaving
+     content waiting on a script, and nothing here does. If --seg-len is
+     missing the dasharray declaration is simply invalid and the ring renders
+     whole, which is the right way to fail. */
+  @media (prefers-reduced-motion:no-preference){
+    .planet-seg{
+      stroke-dasharray:var(--seg-len);
+      stroke-dashoffset:var(--seg-len);
+      animation:ring-draw var(--seg-dur,300ms) cubic-bezier(.4,0,.2,1) var(--seg-delay,0ms) forwards;
+    }
+  }
+  @keyframes ring-draw{to{stroke-dashoffset:0;}}
   .planet-seg.mastered{stroke:var(--mastered);}
   .planet-seg.training{stroke:var(--training);}
   .planet-seg.untrained{stroke:var(--untrained);}
@@ -1960,6 +1978,7 @@ button{font-family:inherit;}
   .synapse,.neuron,.soma,.nucleus,.axon-label,.halo,.chev{transition:none;}
   .graticule,.core,.planets{transition:none;}
   .tick-ring,.planet-sat{animation:none;}
+  .planet-seg{animation:none;stroke-dasharray:none;stroke-dashoffset:0;}
   .core-spark{animation:none;}
   .synapse.lit{animation:none;stroke-dasharray:none;}
   .neuron.selected .halo{animation:none;}
