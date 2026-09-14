@@ -1004,7 +1004,11 @@ button{font-family:inherit;}
 .bar-shine{
   position:absolute;top:0;bottom:0;width:38px;
   background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);
-  animation:shineSweep 2.6s ease-out .9s infinite;
+  /* Runs once when the value changes, chasing the 1s fill — not every 2.6
+     seconds forever. A perpetual sweep on a stat tile is the one loop that
+     sat directly on a reading surface. AnimatedBar keys this span on `pct`
+     so a new score replays it. */
+  animation:shineSweep 1.3s ease-out .15s both;
 }
 .xp-track,.job-xp-track{position:relative;overflow:hidden;}
 .xp-fill{position:relative;inset:auto;height:100%;}

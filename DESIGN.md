@@ -26,8 +26,8 @@ blue for live data, one bronze for chrome.
 Every surface is opaque. This is a study tool — a learner reads a Technique's
 explanation for minutes at a stretch — and translucency over a busy backdrop is
 exactly what made the previous dark build hard to read. There is no glass, no
-blur, no glow, and no ambient animation running in your peripheral vision while
-you read.
+blur and no glow. Ambient movement exists only where nothing is being read —
+see the exemptions in *Motion* below.
 
 The Observatory identity lives in the *names and the structures* — the star
 chart, the seven agents, the character portrait, "Origin System" — not in the
@@ -114,11 +114,27 @@ why the star chart's centre had a brown smudge through it for one iteration.
 
 Movement is product motion, not effects. Three rules it follows:
 
-1. Nothing loops in your peripheral vision while you read.
+1. **Nothing loops on a reading surface.** A progress bar's shine runs once
+   when the value changes, not every 2.6 seconds forever.
 2. Every transition is either feedback for something you just did, or a cue
    about where content begins.
 3. Effects compose. Entrances animate `translate` and `opacity` so a hover
    `transform` still works underneath them.
+
+Rule 1 has two exemptions, and the difference between them and decoration is
+the whole point:
+
+- **A loop that carries state is information.** The loading shimmer, a lit
+  synapse in the neural view, the halo on a selected node — each one stops
+  when its state stops. It is not ambient; it *is* the reading.
+- **The star chart and the hero wash are not reading surfaces.** An instrument
+  panel and a backdrop can breathe. Their loops sit behind or beside prose,
+  never inside it, and they are slow on purpose: nothing cycles faster than
+  about five seconds, and most are far slower than that.
+
+A new ambient loop has to clear both bars: not on a surface anyone reads, and
+slow enough that you only notice it when you go looking. If it fails either,
+it is decoration and it does not go in.
 
 **The one rule with teeth: never hide content from CSS alone.** The
 hidden-until-revealed state for scroll entrances is applied by

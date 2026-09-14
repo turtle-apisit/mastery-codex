@@ -29,7 +29,9 @@ export default function AnimatedBar({
   return (
     <div className={trackClass}>
       <div className={fillClass + " bar-eased"} style={{ width: `${width}%` }}>
-        <span className="bar-shine" aria-hidden="true" />
+        {/* Keyed on pct so a changed score remounts the span and replays the
+            one-shot sweep. Without the key it would only ever run on mount. */}
+        <span key={pct} className="bar-shine" aria-hidden="true" />
       </div>
     </div>
   );
