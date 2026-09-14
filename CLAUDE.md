@@ -54,6 +54,11 @@ open the page in a real browser before calling it done. `grep`/`curl` on the
 response is fine for confirming a route exists or a build produced *some*
 content — it is never sufficient evidence that a UI change works.
 
+`DESIGN.md` carries the rest of it: which token to reach for, what the app is
+not allowed to look like, and the specific checks the current theme was held to
+(390px and 1440px, no horizontal overflow, nothing stuck below full opacity,
+reduced-motion, mid-load). Read it before writing app code, not after.
+
 ## Nova
 
 Every Technique note, exercise, and score in this vault is produced by one of
@@ -212,6 +217,7 @@ the first place.
 | Supabase `lecture_files` table + `lecture-files` storage bucket (`mastery-codex-db`) | Files a learner uploads per course through the Course page's upload form. A Claude Code session's outbound network is blocked from `*.supabase.co` entirely (confirmed 2026-09-09: both direct HTTP fetch and `pg_net`'s `net.http_get` fail — `pg_net` truncates any response past ~250 bytes, nowhere near enough for a real PDF), so **Lyra cannot fetch an already-uploaded lecture file itself**. Ask the learner to attach the PDF directly in the chat instead — Read (or the `pdf` skill, for messier extraction) can then work on it locally exactly as if it were a file under `assets/raw-data/` |
 | `test-exam-pattern-solution/` | A one-off sandbox from working out the exam format by hand. Not a template for new exams |
 | Supabase Edge Functions `fetch-b64`, `lyra-extract` (`mastery-codex-db`) | Deprecated. Built for a one-off sandboxed Lyra-capture test (2026-09-01) that needed to fetch and extract lecture files server-side; both now return `410` and are otherwise inert. No `delete_edge_function` tool exists to remove them outright — delete via the Supabase dashboard if you want them gone. The `pg_net` extension they depended on is still enabled and harmless on its own, but is not a working substitute — see the `lecture_files` row above for why, and for the actual workaround |
+| `DESIGN.md` | The app's visual language — colour roles, typography, layout, motion, do's and don'ts, and the bar a visual change is verified against. It deliberately carries **no token values**: `web/app/globals.css :root` owns those, and duplicating them would create a second source of truth that drifts. Read it before touching `web/app` or `web/components` |
 | `web/` | The Next.js app |
 | `.claude/agents/` | The party and central agents (Lyra, Vega, Atlas, Polaris, Rigel, Corvus, Antares) |
 | `.claude/skills/` | The expertise each agent loads before acting |
