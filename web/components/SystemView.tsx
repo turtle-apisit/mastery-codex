@@ -86,6 +86,11 @@ function polar(r: number, deg: number) {
   return { x: r * Math.cos(a), y: r * Math.sin(a) };
 }
 
+/** How long a whole ring takes to draw itself in, and how far apart two
+ *  planets start. Short enough to be over before you finish looking. */
+const RING_DRAW_MS = 800;
+const RING_STAGGER_MS = 90;
+
 /** Ring segment, drawn clockwise from `from`° to `to`°, centred on the origin. */
 function arcPath(r: number, from: number, to: number) {
   const span = Math.max(0.01, Math.min(359.99, to - from));
@@ -425,7 +430,7 @@ export default function SystemView({
             layerRefs.current.planets = el;
           }}
         >
-          {specs.map((s) => {
+          {specs.map((s, planetIndex) => {
             const home = homeOf(s.baseAngle, s.spread);
             const id = s.subject.replace(/\W+/g, "-").toLowerCase();
             const r = s.r;
@@ -436,18 +441,39 @@ export default function SystemView({
             const isHot = hover === s.subject || dragging === s.subject;
             const labelTop = tickR + tickLen + labelSize + 7;
 
+            // The ring draws itself once on entry, at a constant angular
+            // speed — so the time each band takes to appear IS its share of
+            // the subject. You read the proportions by watching them, instead
+            // of squinting at three arcs that all arrived together.
             let cursor = -90;
+            let elapsed = 0;
             const segs = (["mastered", "training", "untrained"] as const)
               .map((k) => {
                 const frac = s.counts[k] / s.total;
                 const from = cursor;
                 const to = cursor + frac * 360;
                 cursor = to;
-                return frac > 0.005
-                  ? { k, d: arcPath(ringR, from + 1.5, to - 1.5) }
-                  : null;
+                if (frac <= 0.005) return null;
+                // Arc length straight from the geometry we already have —
+                // r × θ — so no getTotalLength() and no layout read.
+                const span = to - 1.5 - (from + 1.5);
+                const seg = {
+                  k,
+                  d: arcPath(ringR, from + 1.5, to - 1.5),
+                  len: (ringR * span * Math.PI) / 180,
+                  delay: elapsed,
+                  dur: frac * RING_DRAW_MS,
+                };
+                elapsed += frac * RING_DRAW_MS;
+                return seg;
               })
-              .filter(Boolean) as { k: string; d: string }[];
+              .filter(Boolean) as {
+              k: string;
+              d: string;
+              len: number;
+              delay: number;
+              dur: number;
+            }[];
 
             return (
               <g
@@ -524,7 +550,18 @@ export default function SystemView({
 
                 <circle className="planet-track" r={ringR} />
                 {segs.map((seg) => (
-                  <path key={seg.k} d={seg.d} className={"planet-seg " + seg.k} />
+                  <path
+                    key={seg.k}
+                    d={seg.d}
+                    className={"planet-seg " + seg.k}
+                    style={
+                      {
+                        "--seg-len": seg.len.toFixed(2),
+                        "--seg-delay": `${(seg.delay + planetIndex * RING_STAGGER_MS).toFixed(0)}ms`,
+                        "--seg-dur": `${seg.dur.toFixed(0)}ms`,
+                      } as React.CSSProperties
+                    }
+                  />
                 ))}
 
                 <circle className="planet-body" r={r} />
