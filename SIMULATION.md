@@ -46,11 +46,13 @@ would quietly kill the objective:
 | Item type | Count | Points each | Subtotal | Breakdown |
 |---|---|---|---|---|
 | `choice` | 10 | 1 | 10 | correct / incorrect, nothing in between |
-| `written` | 2 | 5 | 10 | 3 content + 2 writing |
+| `written` | 2 | 5 | 10 | 3 content + 1 clarity + 1 precision |
 
-The written item's five points split **3 content + 2 writing** and the split is
-load-bearing, not cosmetic — see *Scoring* below for why only one half of it is
-allowed to move a Technique's score.
+The written item's five points split **3 content + 2 writing**, and the split is
+load-bearing rather than cosmetic — see *Scoring* below for why only the content
+half is allowed to move a Technique's score. The database already carries the
+ranges: `content_score` is constrained to `0–3`, and `writing_clarity` and
+`writing_precision` to `0–1` each.
 
 The schema needs no change to support this. Nothing in `exam_sets` /
 `exam_items` / `exam_attempts` hardcodes a count or a split: `item_type` and
@@ -235,6 +237,13 @@ point is mechanically checkable, and all nine must pass before the write:
    contradicts the lecture material.
 9. **`exam_set_reviews` is written only after Rigel and Nova have both agreed** —
    never as part of the same write that inserts the items.
+
+Points 5 and 7 are partly enforced by `check` constraints already — a `choice`
+row cannot exist without `options` and `correct_option`, a `written` row cannot
+exist without `rubric` and `model_answer` — so what is actually left to judge
+there is the spread of correct letters and the quality of the rubric. Points 1,
+2, 3, 4 and 6 have no database backstop at all and are the ones a set will
+silently fail.
 
 ## 9. Build order
 
