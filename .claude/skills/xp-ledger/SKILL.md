@@ -100,7 +100,132 @@ One row per history entry. Never one summarizing row per day.
 - **`activity: capture`** — delta 0, no `last_reviewed` change. Capturing material is not evidence of understanding.
 - **Concept renamed upstream** — do not chase it. Bounce the handoff and name the mismatch; a silent match-by-similarity can log a score against the wrong concept.
 
-## 7. Ledger integrity
+## 7. Simulation rounds
+
+A Simulation round does not arrive as one handoff. It arrives as one graded
+exam set — twelve items, one subject, each item bound to a `technique_id`.
+`SIMULATION.md` has the feature's objective and format; this section is only
+the bookkeeping.
+
+### One row per item, never one per round
+
+Twelve graded items produce twelve `technique_history` rows. A set that touches
+seven Techniques still produces twelve rows, not seven and not one.
+
+This is the same rule as §3's "two handoffs, same concept, same day → two
+entries", and it is the rule the whole feature depends on: a per-round row can
+only answer *how did today go*, and the question Simulation exists to answer is
+*which Technique improved*. Never net two items on the same Technique into one
+delta. `+3, −3, +9` is three rows and means something a single `+9` does not.
+
+Rows go in `exam_items.position` order — arrival order, per §3.
+
+### Activity kind
+
+| Item | `activity` |
+|---|---|
+| `choice` | `quiz` |
+| `written` | `essay` |
+
+`exam` stays reserved for Antares's five-week cycle. Logging a daily drill as
+`exam` makes the two indistinguishable in the history, and Corvus's calibration
+audit needs to tell them apart.
+
+### Delta
+
+Choice items:
+
+| Result | Delta |
+|---|---|
+| correct | `+3` |
+| incorrect | `−3` |
+
+Written items, from `content_score` (0–3):
+
+| `content_score` | Delta |
+|---|---|
+| 3 | `+9` |
+| 2 | `+4` |
+| 1 | `−2` |
+| 0 | `−8` |
+
+**Why choice is the small number.** A four-option item has a 25% floor: a
+correct answer is part evidence and part luck, and the ledger should not pay
+full price for a coin flip. A written answer cannot be guessed, so it carries
+the weight. Were the two equal, a round would be decided by the ten items that
+are cheapest to get right by accident, and the score curve moment 6 compares
+would be mostly noise.
+
+### Writing sub-scores never become a delta
+
+`writing_clarity` and `writing_precision` are each `0` or `1` (the database
+constrains both to that range), and together with `content_score`'s `0–3` they
+make the written item's five points. They are recorded on the `exam_attempts`
+row and stop there. Only `content_score` moves a Technique's score.
+
+A learner who understands the Technique and writes it awkwardly has not
+understood it less. Folding prose quality into the delta would put noise into
+the one number the feature's success test reads, and it would make a score
+drop ambiguous between "lost the concept" and "wrote it badly" — which are
+opposite problems with opposite remedies.
+
+### Building the note
+
+§1.5 bounces a handoff whose note is not substantive, and that applies here
+unchanged. "Correct" is not a note.
+
+- **Choice, incorrect** — name the misunderstanding the chosen distractor
+  indicates. You do not have to infer it: `exam_items.options` is a JSON array
+  of `{ text, diagnosis }` objects and the chosen one's `diagnosis` says what
+  picking it means (`exercise-design` §8). Lift that into the note. A
+  distractor whose `diagnosis` is missing is a malformed item — bounce it
+  rather than logging `"incorrect"`, which leaves the Technique untargetable.
+- **Choice, correct** — state what the item established, from the question and
+  the correct option: `"identified write skew as the anomaly snapshot
+  isolation still permits"`, not `"correct"`.
+- **Written** — Vega's `feedback`, trimmed to the substance. The full text
+  already lives on the attempt; the note carries what next round needs.
+
+### Dating the rows
+
+The activity date is `exam_attempts.answered_at` — when the learner produced
+the evidence, not when grading finished. The 10 choice items grade instantly
+and the 2 written items may grade later, and all twelve belong to the same
+round.
+
+If grading lands on a later day, §3 still holds: log it today and put the real
+answer date in the note. Never backfill.
+
+### Before committing a round
+
+- **Every item's Technique must be unlocked.** A graded result on a locked
+  Technique means the targeting step ignored the lock (§1.7). Bounce that item
+  and name the blocking prerequisite — do not log it and do not quietly drop it.
+- **Row count must equal graded-item count.** An eleven-row commit for a
+  twelve-item round is a missing row, not a rounding difference.
+- **An ungraded written item is not a zero.** If only the 10 choice items have
+  been graded, commit those ten and say plainly that two are outstanding.
+  `content_score: null` is "not yet judged"; `content_score: 0` is "judged and
+  wrong", and they must never collapse into each other.
+
+Clamping (§2), boundary reporting (§6) and the scorecard row (§5) work exactly
+as they do for any other activity — one scorecard row per history row.
+
+### What the database already guarantees, and what it does not
+
+Worth knowing so validation effort goes where it is actually needed. Already
+enforced by `check` constraints, so there is no point re-checking them:
+`item_type` is `choice` or `written`; a `choice` item cannot exist without both
+`options` and `correct_option`; a `written` item cannot exist without both
+`rubric` and `model_answer`; `source_basis` is one of `lecture` / `outside` /
+`mixed`; `content_score` is `0–3`; `graded_by` is `auto` (the ten choice items,
+scored by comparison) or `vega` (the two written ones, scored by judgment).
+
+Not enforced anywhere, and therefore yours to check: that the round is ten
+choice plus two written, that its Techniques all belong to one subject, that a
+question is not a repeat, and that a note is substantive.
+
+## 8. Ledger integrity
 
 Invariants that must hold after every commit:
 

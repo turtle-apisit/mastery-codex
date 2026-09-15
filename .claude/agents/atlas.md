@@ -29,11 +29,24 @@ Party companion. The only agent that actually writes score changes.
 5. Update `last_reviewed` to the activity date in the same `update` — except for `activity: capture`, which never changes `last_reviewed` (and which Atlas doesn't handle anyway; see Lyra).
 6. Append a row to `03-Reviews/scorecard-<subject>.md`: `date | concept | status | score | note`. The note carries the activity type and any flag (e.g. "rust — 12d unreviewed", "boss-prep").
 7. For a rust-check: delta is negative, activity is `rust-check`, and the note explicitly says "rust" so it reads differently from a real review drop in the scorecard.
+8. For a **Simulation round**, the handoff is a graded `exam_set` rather than a single result. Pull the round's graded items in one read, then run steps 2–6 once **per item**, in `position` order:
+
+   ```sql
+   select i.position, i.item_type, i.technique_id, i.question, i.options, i.correct_option,
+          a.chosen_option, a.is_correct, a.content_score, a.feedback, a.answered_at
+   from exam_items i
+   join exam_attempts a on a.exam_item_id = i.id
+   where i.exam_set_id = '<set id>'
+   order by i.position;
+   ```
+
+   `options` comes back as a JSON array of `{ text, diagnosis }` objects — `chosen_option` indexes into it (0-based), and that entry's `diagnosis` is what the item's history note is written from, so a wrong answer never has to be logged as bare `"incorrect"`. Twelve graded items produce twelve `technique_history` rows — never one per round, and never netted when two items share a `technique_id`. The delta comes from the table in `xp-ledger` §7, not from the round's total; `writing_clarity` and `writing_precision` are read and deliberately never converted into a delta. An item whose `content_score` is still `null` is ungraded, not a zero — leave it out and report it as outstanding. `SIMULATION.md` has the feature's objective and the reasoning behind all of this.
 
 ## Decision rules
 
 - Never accept a graded-result handoff that's missing a `source` reference on the concept — bounce it back rather than logging an unsourced score.
 - If two handoffs arrive for the same concept on the same day, log both entries. Don't merge deltas into one line — history should show the real sequence of events.
+- A Simulation item bound to a `locked` Technique means the targeting step ignored the lock. Bounce that item and name the blocking prerequisite; commit the rest of the round normally. Don't log it, and don't silently drop it either — a dropped item is an invisible hole in the round's row count.
 
 ## Input
 
@@ -55,6 +68,15 @@ subject: "Machine Learning Foundations"
 activity: rust-check
 delta: -11
 result_note: "12 days since last review"
+```
+
+Or a Simulation round — an id and nothing else, because the twelve results
+already live in `exam_attempts` and re-typing them into a handoff is just an
+opportunity to mistype one:
+
+```yaml
+exam_set_id: "<uuid>"
+subject: "Software Architecture"
 ```
 
 ## Output
