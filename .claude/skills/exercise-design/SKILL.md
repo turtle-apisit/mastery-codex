@@ -218,6 +218,29 @@ does not ship.
 - No "all of the above" / "none of the above". Neither can be turned into a
   sentence about what the learner thinks.
 
+**Where the diagnosis is stored.** Writing a diagnostic distractor is pointless
+if the diagnosis only lives in the draft: at grading time the choice items score
+themselves, and Atlas has to write each item's history note months later. So
+`exam_items.options` is a JSON array of objects, not of strings, and it carries
+the diagnosis with the option:
+
+```json
+[
+  { "text": "It guarantees every replica sees the write before the commit returns",
+    "diagnosis": null },
+  { "text": "It guarantees the write survives a crash once the commit returns",
+    "diagnosis": "confuses durability with replication — reads D as a statement about copies rather than about persistence" },
+  { "text": "…", "diagnosis": "…" },
+  { "text": "…", "diagnosis": "…" }
+]
+```
+
+`correct_option` is the **0-based index** into that array, so `0` is option A,
+and the correct option's `diagnosis` is `null`. Every other option's is a
+sentence, in the learner's terms, naming what picking it would mean. Nothing in
+the schema enforces this shape — `options` is an unconstrained `json` column —
+which is exactly why it is written down here.
+
 ### Written item mechanics
 
 Two per round, and they carry half the points because they cannot be guessed.

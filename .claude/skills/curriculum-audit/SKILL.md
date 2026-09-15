@@ -124,12 +124,17 @@ test what the source teaches* is §2's source-alignment work, item by item. A
 set can pass either one while badly failing the other, and a single blended
 verdict hides which.
 
-Six of the nine points are countable and should be done first, because they are
-cheap and they disqualify: the 10/2 split; every `technique_id` inside the set's
-subject; the spread of correct letters; a rubric that names what a
-`content_score` of 3 requires; `model_answer` present; `source_basis` set. Two
-of them the database already refuses to store wrong, so confirm rather than
+Five of the nine points are countable and should be done first, because they
+are cheap and they disqualify: point 1 (the 10/2 split), point 2 (every
+`technique_id` inside the set's subject), point 5 (the spread of correct
+letters), point 7 (`model_answer` present and a rubric that names what a
+`content_score` of 3 requires) and point 8 (`source_basis` set). Parts of 5 and
+7 the database already refuses to store wrong, so confirm those rather than
 labour over them.
+
+That leaves points 3, 4 and 6 — the repeat search, the changed angle, and the
+distractors — which is where the real work is, and point 9, which is procedure
+rather than a property of the set.
 
 **The repeat check is the expensive one and cannot be skipped.** For each
 Technique in the set, pull every question ever asked of it — all prior sets,
