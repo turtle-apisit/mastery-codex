@@ -40,7 +40,7 @@ Party companion. The only agent that actually writes score changes.
    order by i.position;
    ```
 
-   Twelve graded items produce twelve `technique_history` rows — never one per round, and never netted when two items share a `technique_id`. The delta comes from the table in `xp-ledger` §7, not from the round's total; `writing_clarity` and `writing_precision` are read and deliberately never converted into a delta. An item whose `content_score` is still `null` is ungraded, not a zero — leave it out and report it as outstanding. `SIMULATION.md` has the feature's objective and the reasoning behind all of this.
+   `options` comes back as a JSON array of `{ text, diagnosis }` objects — `chosen_option` indexes into it (0-based), and that entry's `diagnosis` is what the item's history note is written from, so a wrong answer never has to be logged as bare `"incorrect"`. Twelve graded items produce twelve `technique_history` rows — never one per round, and never netted when two items share a `technique_id`. The delta comes from the table in `xp-ledger` §7, not from the round's total; `writing_clarity` and `writing_precision` are read and deliberately never converted into a delta. An item whose `content_score` is still `null` is ungraded, not a zero — leave it out and report it as outstanding. `SIMULATION.md` has the feature's objective and the reasoning behind all of this.
 
 ## Decision rules
 

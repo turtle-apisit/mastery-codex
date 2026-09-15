@@ -175,9 +175,11 @@ opposite problems with opposite remedies.
 unchanged. "Correct" is not a note.
 
 - **Choice, incorrect** — name the misunderstanding the chosen distractor
-  indicates. This is why `SIMULATION.md` requires every distractor to diagnose
-  something specific; a filler option leaves nothing to write, and a Technique
-  whose history reads "incorrect" four times is untargetable.
+  indicates. You do not have to infer it: `exam_items.options` is a JSON array
+  of `{ text, diagnosis }` objects and the chosen one's `diagnosis` says what
+  picking it means (`exercise-design` §8). Lift that into the note. A
+  distractor whose `diagnosis` is missing is a malformed item — bounce it
+  rather than logging `"incorrect"`, which leaves the Technique untargetable.
 - **Choice, correct** — state what the item established, from the question and
   the correct option: `"identified write skew as the anomaly snapshot
   isolation still permits"`, not `"correct"`.
