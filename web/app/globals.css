@@ -1955,6 +1955,91 @@ button{font-family:inherit;}
 }
 
 /* Kept last: these overrides must win over every rule above. */
+@layer components{
+  /* ---------- simulation ---------- */
+  /* Reuses .fa-item / .fa-options / .fa-option wholesale — a Simulation item
+     and a Final Approach item are the same object on screen, and giving them
+     two near-identical class trees is how they drift apart. Only what is
+     genuinely new to Simulation lives here. */
+
+  .sim-subject-row{display:flex;flex-wrap:wrap;gap:var(--sp-3);}
+  .sim-count{color:var(--text-faint);font-size:var(--step--1);}
+  /* De-emphasised with a colour, not with opacity. A partly-transparent
+     element is how a broken entrance animation looks, and the screenshot
+     pass flags any in-viewport element below full opacity — using opacity
+     for styling here would mean teaching that guard to ignore real bugs. */
+  .fa-band-btn.active .sim-count{color:color-mix(in oklch, currentColor 75%, transparent);}
+
+  .sim-round-list,.sim-progress-list{
+    list-style:none;margin:0;padding:0;
+    display:flex;flex-direction:column;gap:var(--sp-2);
+  }
+  .sim-round-row{
+    display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-3);
+    padding:var(--sp-3) var(--sp-4);
+    border:1px solid var(--border-strong);border-radius:var(--r-md);
+    background:color-mix(in oklch, var(--surface-2) 50%, transparent);
+    color:var(--text-muted);text-decoration:none;
+    transition:border-color .15s ease,color .15s ease;
+  }
+  .sim-round-row:hover{border-color:var(--glass-border);color:var(--text);}
+  .sim-round-no{font-family:var(--font-mono);font-size:var(--step--1);color:var(--gold);}
+  .sim-round-date{
+    font-family:var(--font-mono);font-size:var(--step--1);color:var(--text-faint);
+    margin-inline-start:auto;
+  }
+  .sim-status-ready{color:var(--accent);border-color:var(--accent);background:var(--accent-soft);}
+  .sim-status-submitted{color:var(--training);border-color:var(--training);background:var(--training-soft);}
+  .sim-status-graded{color:var(--mastered);border-color:var(--mastered);background:var(--mastered-soft);}
+
+  /* ---------- what moved ---------- */
+  .sim-progress-row{
+    display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-3);
+    padding:var(--sp-3) var(--sp-4);
+    border:1px solid var(--border);border-radius:var(--r-md);
+  }
+  .sim-progress-name{flex:1;min-width:0;overflow-wrap:anywhere;color:var(--text);}
+  .sim-progress-track{display:flex;align-items:center;gap:var(--sp-2);flex:none;}
+  .sim-from{font-family:var(--font-mono);font-size:var(--step--1);color:var(--text-faint);}
+  .sim-arrow{color:var(--text-faint);}
+  .sim-progress-count{font-family:var(--font-mono);font-size:var(--step--1);color:var(--text-faint);}
+  /* Movement is live data, so it reads in the status hues rather than in
+     chrome bronze. Flat is muted on purpose: a Technique that was examined
+     and did not move is the finding, and it should not shout. */
+  .sim-moved{
+    font-family:var(--font-mono);font-size:var(--step--1);font-weight:600;
+    flex:none;min-width:3.5ch;text-align:end;
+  }
+  .sim-moved.up{color:var(--mastered);}
+  .sim-moved.down{color:var(--untrained);}
+  .sim-moved.flat{color:var(--text-faint);}
+
+  /* ---------- round screen ---------- */
+  .sim-targeting,.sim-diagnosis{
+    margin:0;font-size:var(--step--1);line-height:1.6;color:var(--text-muted);
+    display:flex;flex-direction:column;gap:var(--sp-1);text-wrap:pretty;
+  }
+  .sim-diagnosis{
+    padding:var(--sp-3) var(--sp-4);
+    border:1px solid var(--untrained);border-radius:var(--r-md);
+    background:var(--untrained-soft);
+  }
+  .sim-written-answer{
+    margin:0;padding:var(--sp-4);
+    border:1px solid var(--border-strong);border-radius:var(--r-md);
+    background:color-mix(in oklch, var(--surface-2) 55%, transparent);
+    font-size:var(--step--1);line-height:1.65;color:var(--text);
+    white-space:pre-wrap;overflow-wrap:anywhere;
+  }
+  .sim-grade{display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-3);}
+  .sim-submit{margin-top:var(--sp-5);}
+
+  @media (max-width:560px){
+    .sim-round-date{margin-inline-start:0;}
+    .sim-progress-name{flex-basis:100%;}
+  }
+}
+
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto;}
   .cast-hero{animation:none;}
