@@ -37,7 +37,7 @@ If the source's own sentence answers the item, the item measures reading, not un
 - **Decision walk** — a scenario with a constraint, ask which option and why. The "why" carries the whole grade.
 
 ### Never
-- True/false, or multiple choice with an obviously silly distractor. Both grade above their real difficulty.
+- True/false, or multiple choice with an obviously silly distractor. Both grade above their real difficulty. Simulation rounds are the one place multiple choice is used deliberately, and they are allowed it only by satisfying this rule rather than by being exempt from it — see §8.
 - Items with two questions bolted together — you can't tell which half failed, which destroys the diagnostic value for the next retry.
 
 ## 3. Retrieval practice and desirable difficulty
@@ -123,6 +123,142 @@ Deltas must mean the same thing this week as last week. Grade the artifact again
 A confidently wrong answer is worth a **negative** delta: it's evidence the concept's score was overstated. Silently awarding 0 lets a wrong model sit at a `training` score indefinitely.
 
 Every `result_note` must state what was right and what was missing, concretely enough that next week's retry item can be built from it alone. "Partially correct" is a useless note; "derived the update rule, missed that the learning rate trades stability for speed" is a next exercise.
+
+## 8. Simulation rounds
+
+A Simulation round is twelve items on one subject — 10 `choice` + 2 `written`,
+about fifteen minutes, every day. `SIMULATION.md` carries the objective and the
+nine-point conformance checklist a set is audited against; this section is the
+craft of building one.
+
+### Multiple choice, and why it is allowed here
+
+§2 says never to write multiple choice with an obviously silly distractor,
+because it grades above its real difficulty. That still stands, and it is the
+reason ten of the twelve items can be multiple choice at all: **a Simulation
+distractor is not a wrong option, it is a hypothesis about how someone
+misunderstands this Technique.**
+
+Each of the three wrong options names a specific, nameable error — a reversed
+direction, a confused neighbour concept, a right mechanism applied outside its
+boundary. Which one the learner picks is the item's entire diagnostic output,
+and it is the only material Atlas has to write that item's history note with
+(`xp-ledger` §7). A filler option produces no note, and one round later that
+Technique cannot be targeted.
+
+The practical test before an option ships: **finish the sentence "picking this
+means they think ___".** If you cannot, the option is filler and the item is
+not ready. Four plausible-looking options where only one is diagnostic is the
+same failure as one silly option, dressed better.
+
+### Targeting the twelve
+
+A round is targeted, never sampled. Read the subject's Techniques with their
+`score` and recent `technique_history`, then fill in this order:
+
+1. **Weak and unlocked** — lowest scores first. This is most of the round.
+2. **Going stale** — `mastered` or high `training` with an old `last_reviewed`.
+3. **A short confirming tail** — one or two strong ones, to catch a score that
+   is no longer true.
+
+Never twelve at random. Random sampling answers *how are you doing*; the
+feature exists to answer *what is weak*. Write the reasoning into
+`exam_sets.targeting_note` so a later audit can ask why these twelve.
+
+`locked` Techniques are out, per shared-contract item 3 — a locked Technique
+in a round means the targeting step ignored the lock, and Atlas will bounce
+the item anyway.
+
+### Before writing an item: the repeat search
+
+The learner's rule is that questions never repeat but topics are meant to. So
+for every Technique the round touches, read what has already been asked of it:
+
+```sql
+select i.question, i.item_type, i.source_basis, s.set_number
+from exam_items i
+join exam_sets s on s.id = i.exam_set_id
+where i.technique_id = '<technique id>'
+order by s.set_number;
+```
+
+Every prior set, not just the last one. `exam_attempts` allows exactly one
+attempt per item, so a repeat cannot even be answered twice — but the real
+damage is subtler: a re-served question measures recall of the answer, and the
+score it produces goes into the same curve that round 3 is compared against.
+The comparison is the deliverable, so a repeat corrupts the deliverable.
+
+This is §3's "vary surface, keep structure" made strict. Same underlying
+structure is fine and good; the same question is not.
+
+### The two axes a repeated topic varies along
+
+At least one must change, or it is a paraphrase:
+
+**Cognitive level.** §1's table already maps status to level, and that is the
+first axis — an `untrained` Technique gets recall and explain, a `training` one
+gets apply and analyze, a `mastered` one gets evaluate and transfer. As a score
+climbs, its questions must climb with it, which is what stops round 5 from
+re-asking round 1 in new words.
+
+**`source_basis`.** `lecture` asks it in the source's own framing; `outside`
+asks it from a situation the lecture never covered; `mixed` needs both. An
+`outside` item must never contradict the lecture — it extends it, and
+shared-contract item 6 still applies: an item you cannot ground in a source
+does not ship.
+
+### Choice item mechanics
+
+- Four options, and the correct answers **spread across all four letters over
+  the round**. Options render in the order written and are never shuffled, so a
+  set whose answer is usually A can be passed without reading it.
+- One question per item. §2's ban on two-questions-bolted-together matters more
+  here, not less — a choice item gives you one bit, and if that bit is about two
+  things it is worth nothing.
+- No "all of the above" / "none of the above". Neither can be turned into a
+  sentence about what the learner thinks.
+
+### Written item mechanics
+
+Two per round, and they carry half the points because they cannot be guessed.
+Each needs a `model_answer` and a `rubric` — the database will not accept a
+written item without both.
+
+The rubric has to produce a defensible `content_score` of 0–3, so write it to
+these bands rather than as free advice:
+
+| `content_score` | The answer |
+|---|---|
+| 3 | gets the mechanism right and complete for what was asked |
+| 2 | gets the mechanism right, missing or blurring one required element |
+| 1 | is on topic but the mechanism is wrong, or it only restates the term |
+| 0 | is off topic, empty, or confidently wrong in a way that would mislead |
+
+Name, in the rubric, the specific elements a 3 requires. "Demonstrates
+understanding" is not a rubric — it cannot be disagreed with, which means it
+cannot be audited either.
+
+### Grading a round
+
+The ten choice items grade themselves against `correct_option`
+(`graded_by: 'auto'`). The two written ones are Vega's judgment
+(`graded_by: 'vega'`), producing:
+
+- `content_score` 0–3, from the rubric bands above.
+- `writing_clarity` 0 or 1 — could a reader follow the argument in one pass.
+- `writing_precision` 0 or 1 — are the technical terms used exactly, rather
+  than gestured at ("some kind of", "it sort of").
+- `feedback` — §6's rules unchanged. Quote the sentence, say what is wrong,
+  give the correct version.
+
+The two writing sub-scores are recorded and **never** move a Technique's score;
+only `content_score` does (`xp-ledger` §7). Grading them honestly still matters
+— they are the only record of whether the learner's writing is improving — but
+they are not evidence about the Technique.
+
+The handoff to Atlas is then just the `exam_set_id`. The twelve results are
+already in `exam_attempts`, and retyping them into a YAML block is only an
+opportunity to mistype one.
 
 ## Failure modes to avoid
 
