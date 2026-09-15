@@ -165,6 +165,15 @@ items touching 7 Techniques produces 12 rows, not 1 and not 7. The per-item row
 is what makes "which Technique improved" answerable; a per-set row answers only
 "how did today go", which is the anti-objective.
 
+**Every row carries a substantive note, and that constrains the distractors.**
+The `xp-ledger` skill bounces a handoff whose note reads "correct" or "partial",
+because next round's targeting is built from that string. For a written item the
+note is easy — Vega's feedback already says something. For a choice item the
+only material available is *which wrong option was picked*, so each distractor
+has to be written to diagnose a specific, nameable misunderstanding. A
+throwaway wrong option produces an unwritable note and, one round later, an
+untargetable Technique.
+
 Proposed activity mapping — daily drills are not the five-week exam and should
 not be indistinguishable from it in the ledger:
 
@@ -204,7 +213,7 @@ grades against the rubric, Nova cross-checks, and only then does Atlas commit.
 
 Distinct from content quality. Rigel already judges whether a question is
 *good*; this checks whether the set is *the thing that was designed*. Every
-point is mechanically checkable, and all eight must pass before the write:
+point is mechanically checkable, and all nine must pass before the write:
 
 1. **Exactly 10 `choice` + 2 `written`.** Not 11 and 1.
 2. **Every item is bound to a `technique_id`**, and every one of those
@@ -216,12 +225,15 @@ point is mechanically checkable, and all eight must pass before the write:
 5. **Every choice item has a `correct_option`**, and the correct answers are
    spread across all four letters. A bank whose answer is always A can be
    passed without reading it.
-6. **Every written item has both a `model_answer` and a `rubric`.** Without a
+6. **Every distractor names a specific misunderstanding.** Not filler, not an
+   obviously absurd option — picking it has to mean something a note can state
+   (see *Scoring* above for why this is structural and not a style preference).
+7. **Every written item has both a `model_answer` and a `rubric`.** Without a
    rubric there is no defensible `content_score`, and without that there is no
    delta.
-7. **`source_basis` is accurate on every item**, and no `outside` item
+8. **`source_basis` is accurate on every item**, and no `outside` item
    contradicts the lecture material.
-8. **`exam_set_reviews` is written only after Rigel and Nova have both agreed** —
+9. **`exam_set_reviews` is written only after Rigel and Nova have both agreed** —
    never as part of the same write that inserts the items.
 
 ## 9. Build order
