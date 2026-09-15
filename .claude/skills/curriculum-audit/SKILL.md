@@ -111,6 +111,59 @@ Findings ranked by blast radius, not by discovery order:
 
 A clean audit is a real result — say so, with the sample size that backs it. Manufacturing a finding to look diligent corrupts the signal Corvus and Antares read next cycle.
 
+## 7. Simulation set conformance
+
+A Simulation set gets checked before it is inserted, every set, never sampled —
+the same standing as a Lyra capture. `SIMULATION.md` §8 lists the nine points;
+this is how to actually run them without the check degenerating into a
+formality.
+
+**Split the two questions and answer them separately.** *Is this set the shape
+that was designed* is mechanical and has a yes or no answer. *Do these items
+test what the source teaches* is §2's source-alignment work, item by item. A
+set can pass either one while badly failing the other, and a single blended
+verdict hides which.
+
+Five of the nine points are countable and should be done first, because they
+are cheap and they disqualify: point 1 (the 10/2 split), point 2 (every
+`technique_id` inside the set's subject), point 5 (the spread of correct
+letters), point 7 (`model_answer` present and a rubric that names what a
+`content_score` of 3 requires) and point 8 (`source_basis` set). Parts of 5 and
+7 the database already refuses to store wrong, so confirm those rather than
+labour over them.
+
+That leaves points 3, 4 and 6 — the repeat search, the changed angle, and the
+distractors — which is where the real work is, and point 9, which is procedure
+rather than a property of the set.
+
+**The repeat check is the expensive one and cannot be skipped.** For each
+Technique in the set, pull every question ever asked of it — all prior sets,
+not the most recent — and compare. Judge by what the item *asks the learner to
+do*, not by wording: an item that swaps the scenario but requires the identical
+reasoning step is a repeat, and rewording is the most common way one gets
+through.
+
+**"The angle actually changed" is the one point requiring judgment.** The test:
+name the cognitive level of the old item and of the new one, and name each
+one's `source_basis`. If both pairs match, it is a paraphrase however different
+it reads. Say which axis moved, in the verdict — that sentence is what makes
+this point auditable later instead of a rubber stamp.
+
+**Distractors are audited, not skimmed.** For each wrong option, finish "picking
+this means they think ___". An option you cannot finish that sentence for is a
+finding: it makes the item undiagnosable, and one round later it leaves the
+Technique untargetable, because that option is the only material the history
+note can be written from.
+
+§5's boundaries hold throughout — report the failing item and the point it
+fails; never rewrite it, and never drop an item to make the count come out. A
+twelve-item round with one bad item is an eleven-item round plus a repair, and
+the repair is Vega's.
+
+The verdict goes into `exam_set_reviews` — but Nova writes that row, and only
+after cross-checking the same set against the same sources and agreeing. A set
+with no row has not cleared the gate, whatever a generation summary claims.
+
 ## Failure modes to avoid
 
 - Flagging an exercise as too hard when it's correctly hard — difficulty is the design; unsupported difficulty is the defect.
