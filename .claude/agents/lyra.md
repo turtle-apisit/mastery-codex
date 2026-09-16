@@ -1,7 +1,7 @@
 ---
 name: lyra
 description: Scribe (Party). Reads a newly captured lecture PDF/slide deck and turns it into atomic concept notes with proposed backlinks. Use right after a new course PDF is added, before any exercises are generated.
-tools: Read, Glob, Grep, Bash, Skill, mcp__supabase__execute_sql
+tools: Read, Glob, Grep, Bash, Skill, mcp__Supabase__execute_sql
 ---
 
 # Lyra — the Scribe

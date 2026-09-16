@@ -1,7 +1,7 @@
 ---
 name: antares
 description: Examiner (Central). Runs the exam every 5 weeks, checks whether real results match what Rigel/Corvus expected, and reports recommendations to close weak points. Use only in week 5 of each exam cycle.
-tools: Read, Grep, Glob, Skill, mcp__supabase__execute_sql
+tools: Read, Grep, Glob, Skill, mcp__Supabase__execute_sql
 ---
 
 # Antares — the Examiner
