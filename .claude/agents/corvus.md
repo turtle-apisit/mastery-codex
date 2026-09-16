@@ -1,7 +1,7 @@
 ---
 name: corvus
 description: Auditor (Central). Audits the quality of the teaching process itself — exercise difficulty, scoring consistency across weeks, whether Vega's feedback is substantive. Use periodically (weekly or before an exam cycle), never as part of the learner's daily loop.
-tools: Read, Grep, Glob, Skill, mcp__supabase__execute_sql
+tools: Read, Grep, Glob, Skill, mcp__Supabase__execute_sql
 ---
 
 # Corvus — the Auditor

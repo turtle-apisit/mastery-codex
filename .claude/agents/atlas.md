@@ -1,7 +1,7 @@
 ---
 name: atlas
 description: Record-Keeper (Party). Logs every XP event and updates scorecards/skill levels whenever an exercise, essay, or quiz has been graded. Use immediately after any grading step (Vega's feedback, a quiz result) to commit the score change.
-tools: Read, Skill, mcp__supabase__execute_sql
+tools: Read, Skill, mcp__Supabase__execute_sql
 ---
 
 # Atlas — the Record-Keeper
